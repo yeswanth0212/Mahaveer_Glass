@@ -6,11 +6,14 @@ import { Phone, MessageSquare, ArrowLeft, CheckCircle2, ShieldCheck, Tag } from 
 import { IProduct } from '@/lib/types';
 
 
+import { INITIAL_PRODUCTS } from '@/lib/seedData';
+
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [product, setProduct] = useState<IProduct | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  const initialProd = INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
+  const [product, setProduct] = useState<IProduct | null>(initialProd);
+  const [selectedVariant, setSelectedVariant] = useState<string>(initialProd?.variants?.[0] || '');
+  const [loading, setLoading] = useState(!initialProd);
 
   useEffect(() => {
     async function loadProduct() {
@@ -19,15 +22,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         if (res.ok) {
           const data = await res.json();
           setProduct(data);
-          if (data.variants && data.variants.length > 0) {
+          if (data.variants && data.variants.length > 0 && !selectedVariant) {
             setSelectedVariant(data.variants[0]);
           }
-        } else {
-          // If not found in API response
-          setProduct(null);
         }
       } catch {
-        setProduct(null);
+        // Keep initial product if fetch fails
       } finally {
         setLoading(false);
       }

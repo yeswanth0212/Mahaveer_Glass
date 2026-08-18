@@ -6,14 +6,24 @@ import {
   addDoc, 
   setDoc, 
   updateDoc, 
-  deleteDoc, 
-  query, 
-  orderBy, 
-  serverTimestamp 
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { IProduct, ICategory, IEnquiry, IGalleryItem, IBusinessInfo } from './types';
 import { INITIAL_BUSINESS_INFO, INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_GALLERY } from './seedData';
+
+// Fast in-memory cache to make Vercel responses instant
+let cachedProducts: IProduct[] | null = null;
+let lastProductsFetch = 0;
+let cachedCategories: ICategory[] | null = null;
+let lastCategoriesFetch = 0;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms))
+  ]);
+}
 
 // Helper to normalize Firestore doc to product
 function docToProduct(docSnap: any): IProduct {
@@ -44,39 +54,57 @@ function docToProduct(docSnap: any): IProduct {
 
 // ---------------- PRODUCTS ----------------
 export async function getProductsFromFirestore(): Promise<IProduct[]> {
+  const now = Date.now();
+  if (cachedProducts && (now - lastProductsFetch < 60000)) {
+    return cachedProducts;
+  }
+
   try {
-    const colRef = collection(db, 'products');
-    const snap = await getDocs(colRef);
-    if (snap.empty) {
-      // Seed initial products if collection is empty
-      await seedFirestoreProducts();
-      const newSnap = await getDocs(colRef);
-      return newSnap.docs.map(docToProduct);
-    }
-    return snap.docs.map(docToProduct);
+    const fetchPromise = async () => {
+      const colRef = collection(db, 'products');
+      const snap = await getDocs(colRef);
+      if (snap.empty) {
+        await seedFirestoreProducts();
+        const newSnap = await getDocs(colRef);
+        return newSnap.docs.map(docToProduct);
+      }
+      return snap.docs.map(docToProduct);
+    };
+
+    const result = await withTimeout(fetchPromise(), 1500, cachedProducts || INITIAL_PRODUCTS);
+    cachedProducts = result;
+    lastProductsFetch = now;
+    return result;
   } catch (error) {
     console.warn('Firestore getProducts warning, returning initial dataset:', error);
-    return INITIAL_PRODUCTS;
+    return cachedProducts || INITIAL_PRODUCTS;
   }
 }
 
 export async function getProductByIdFromFirestore(id: string): Promise<IProduct | null> {
+  if (cachedProducts) {
+    const foundInCache = cachedProducts.find(p => p.id === id || p._id === id);
+    if (foundInCache) return foundInCache;
+  }
+
   try {
-    const docRef = doc(db, 'products', id);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      return docToProduct(snap);
-    }
-    // Check fallback in memory
-    const initial = INITIAL_PRODUCTS.find(p => p.id === id || p._id === id);
-    return initial || null;
+    const fetchPromise = async () => {
+      const docRef = doc(db, 'products', id);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        return docToProduct(snap);
+      }
+      return INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
+    };
+
+    return await withTimeout(fetchPromise(), 1500, INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null);
   } catch (error) {
-    console.warn('Firestore getProductById error:', error);
     return INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
   }
 }
 
 export async function addProductToFirestore(data: Partial<IProduct>): Promise<IProduct> {
+  cachedProducts = null; // Invalidate cache
   const colRef = collection(db, 'products');
   const now = new Date().toISOString();
   const docData = {
@@ -104,6 +132,7 @@ export async function addProductToFirestore(data: Partial<IProduct>): Promise<IP
 }
 
 export async function updateProductInFirestore(id: string, data: Partial<IProduct>): Promise<IProduct> {
+  cachedProducts = null; // Invalidate cache
   const docRef = doc(db, 'products', id);
   const now = new Date().toISOString();
   const updateData: any = { updatedAt: now };
@@ -144,6 +173,7 @@ export async function updateProductInFirestore(id: string, data: Partial<IProduc
 }
 
 export async function deleteProductFromFirestore(id: string): Promise<boolean> {
+  cachedProducts = null; // Invalidate cache
   const docRef = doc(db, 'products', id);
   await deleteDoc(docRef);
   return true;
@@ -151,29 +181,34 @@ export async function deleteProductFromFirestore(id: string): Promise<boolean> {
 
 // ---------------- CATEGORIES ----------------
 export async function getCategoriesFromFirestore(): Promise<ICategory[]> {
+  const now = Date.now();
+  if (cachedCategories && (now - lastCategoriesFetch < 60000)) {
+    return cachedCategories;
+  }
+
   try {
-    const colRef = collection(db, 'categories');
-    const snap = await getDocs(colRef);
-    if (snap.empty) {
-      await seedFirestoreCategories();
-      const newSnap = await getDocs(colRef);
-      return newSnap.docs.map(d => ({
-        id: d.id,
-        _id: d.id,
-        ...d.data()
-      } as ICategory));
-    }
-    return snap.docs.map(d => ({
-      id: d.id,
-      _id: d.id,
-      ...d.data()
-    } as ICategory));
+    const fetchPromise = async () => {
+      const colRef = collection(db, 'categories');
+      const snap = await getDocs(colRef);
+      if (snap.empty) {
+        await seedFirestoreCategories();
+        const newSnap = await getDocs(colRef);
+        return newSnap.docs.map(d => ({ id: d.id, _id: d.id, ...d.data() } as ICategory));
+      }
+      return snap.docs.map(d => ({ id: d.id, _id: d.id, ...d.data() } as ICategory));
+    };
+
+    const result = await withTimeout(fetchPromise(), 1500, cachedCategories || INITIAL_CATEGORIES);
+    cachedCategories = result;
+    lastCategoriesFetch = now;
+    return result;
   } catch (error) {
-    return INITIAL_CATEGORIES;
+    return cachedCategories || INITIAL_CATEGORIES;
   }
 }
 
 export async function addCategoryToFirestore(data: Partial<ICategory>): Promise<ICategory> {
+  cachedCategories = null;
   const colRef = collection(db, 'categories');
   const now = new Date().toISOString();
   const slug = data.slug || (data.name ? data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '');
