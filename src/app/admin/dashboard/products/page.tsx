@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, Package } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, Package, Star } from 'lucide-react';
 import { IProduct, ICategory } from '@/lib/types';
 
 export default function AdminProductsPage() {
@@ -24,7 +24,9 @@ export default function AdminProductsPage() {
     specifications: '',
     variants: '',
     imageUrl: '',
-    availability: 'In Stock'
+    availability: 'In Stock',
+    available: true,
+    featured: false
   });
 
   const [saving, setSaving] = useState(false);
@@ -61,7 +63,9 @@ export default function AdminProductsPage() {
       specifications: '',
       variants: '',
       imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
-      availability: 'In Stock'
+      availability: 'In Stock',
+      available: true,
+      featured: false
     });
     setErrorMsg('');
     setIsModalOpen(true);
@@ -74,11 +78,13 @@ export default function AdminProductsPage() {
       category: p.category,
       price: p.price.toString(),
       typeVariant: p.typeVariant || '',
-      shortDescription: p.shortDescription || '',
+      shortDescription: p.shortDescription || p.description || '',
       specifications: p.specifications ? p.specifications.join(', ') : '',
       variants: p.variants ? p.variants.join(', ') : '',
-      imageUrl: p.imageUrl,
-      availability: p.availability || 'In Stock'
+      imageUrl: p.imageUrl || p.image || '',
+      availability: p.availability || (p.available === false ? 'Out of Stock' : 'In Stock'),
+      available: p.available !== undefined ? p.available : true,
+      featured: Boolean(p.featured)
     });
     setErrorMsg('');
     setIsModalOpen(true);
@@ -152,7 +158,7 @@ export default function AdminProductsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-800 pb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-stone-100">Product Catalog Management</h1>
-          <p className="text-xs text-stone-400 mt-1">Add, edit prices, update variants, or remove hardware products.</p>
+          <p className="text-xs text-stone-400 mt-1">Add, edit prices, update variants, mark featured/availability in Firestore.</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -176,7 +182,7 @@ export default function AdminProductsPage() {
 
       {/* Products Table */}
       {loading ? (
-        <div className="py-12 text-center text-stone-400 text-xs">Loading products...</div>
+        <div className="py-12 text-center text-stone-400 text-xs">Loading products from Firestore...</div>
       ) : filtered.length === 0 ? (
         <div className="py-12 text-center text-stone-400 text-xs bg-stone-900 rounded-2xl border border-stone-800">
           No products found.
@@ -199,9 +205,12 @@ export default function AdminProductsPage() {
                 {filtered.map((p) => (
                   <tr key={p.id || p._id} className="hover:bg-stone-850 transition-colors">
                     <td className="px-6 py-4 flex items-center gap-3">
-                      <img src={p.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover bg-stone-950 border border-stone-800 shrink-0" />
+                      <img src={p.imageUrl || p.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-stone-950 border border-stone-800 shrink-0" />
                       <div>
-                        <p className="font-bold text-stone-100 text-xs">{p.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-stone-100 text-xs">{p.name}</p>
+                          {p.featured && <span title="Featured Product"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /></span>}
+                        </div>
                         {p.typeVariant && <p className="text-[10px] text-amber-500">{p.typeVariant}</p>}
                       </div>
                     </td>
@@ -213,8 +222,12 @@ export default function AdminProductsPage() {
                       {p.variants && p.variants.length > 0 ? p.variants.join(', ') : 'Default'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400 text-[10px] font-semibold">
-                        {p.availability || 'In Stock'}
+                      <span className={`px-2 py-0.5 rounded border text-[10px] font-semibold ${
+                        p.available === false || p.availability === 'Out of Stock'
+                          ? 'bg-rose-950 border-rose-800 text-rose-400'
+                          : 'bg-emerald-950 border-emerald-800 text-emerald-400'
+                      }`}>
+                        {p.availability || (p.available === false ? 'Out of Stock' : 'In Stock')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
@@ -283,7 +296,7 @@ export default function AdminProductsPage() {
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 focus:border-amber-500"
                   >
                     {categories.map((c) => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
+                      <option key={c.id || c.name} value={c.name}>{c.name}</option>
                     ))}
                   </select>
                 </div>
@@ -330,7 +343,11 @@ export default function AdminProductsPage() {
                   <label className="block font-bold text-stone-300 mb-1">Availability</label>
                   <select
                     value={formData.availability}
-                    onChange={(e: any) => setFormData({ ...formData, availability: e.target.value })}
+                    onChange={(e: any) => setFormData({ 
+                      ...formData, 
+                      availability: e.target.value,
+                      available: e.target.value !== 'Out of Stock'
+                    })}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 focus:border-amber-500"
                   >
                     <option value="In Stock">In Stock</option>
@@ -339,6 +356,32 @@ export default function AdminProductsPage() {
                     <option value="Out of Stock">Out of Stock</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-6 py-1">
+                <label className="flex items-center gap-2 cursor-pointer text-stone-300 font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                    className="w-4 h-4 rounded bg-stone-950 border-stone-800 text-amber-500 focus:ring-0"
+                  />
+                  Mark as Featured Product
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-stone-300 font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={formData.available}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      available: e.target.checked,
+                      availability: e.target.checked ? 'In Stock' : 'Out of Stock'
+                    })}
+                    className="w-4 h-4 rounded bg-stone-950 border-stone-800 text-amber-500 focus:ring-0"
+                  />
+                  Product Available for Purchase
+                </label>
               </div>
 
               <div>
@@ -387,7 +430,7 @@ export default function AdminProductsPage() {
                   disabled={saving}
                   className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-xl shadow-md"
                 >
-                  {saving ? 'Saving...' : 'Save Product'}
+                  {saving ? 'Saving to Firestore...' : 'Save Product'}
                 </button>
               </div>
             </form>

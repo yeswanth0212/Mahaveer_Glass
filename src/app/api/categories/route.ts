@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getFallbackData, saveFallbackData } from '@/lib/db';
-import { seedInitialData } from '@/lib/seed';
+import { getCategoriesFromFirestore, addCategoryToFirestore } from '@/lib/firestoreService';
 import { getAdminSession } from '@/lib/auth';
 
 export async function GET() {
-  await seedInitialData();
-  const data = getFallbackData();
-  return NextResponse.json(data.categories || []);
+  try {
+    const categories = await getCategoriesFromFirestore();
+    return NextResponse.json(categories);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to fetch categories' }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -21,17 +23,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
     }
 
-    const data = getFallbackData();
-    const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const newCategory = {
-      id: 'cat-' + Date.now(),
+    const newCategory = await addCategoryToFirestore({
       name: body.name,
-      slug,
-      description: body.description || ''
-    };
-
-    data.categories.push(newCategory);
-    saveFallbackData(data);
+      slug: body.slug,
+      description: body.description || '',
+      image: body.image || body.imageUrl || '',
+      imageUrl: body.imageUrl || body.image || '',
+    });
 
     return NextResponse.json(newCategory, { status: 201 });
   } catch (err: any) {

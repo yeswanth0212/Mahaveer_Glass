@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, KeyRound, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, KeyRound, AlertCircle, ArrowRight } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -17,10 +19,19 @@ export default function AdminLoginPage() {
     setErrorMsg('');
 
     try {
+      let idToken = '';
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        idToken = await userCredential.user.getIdToken();
+      } catch (fbErr: any) {
+        console.warn('Firebase Auth direct login warning:', fbErr.message);
+      }
+
+      // Establish session cookie
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, idToken })
       });
 
       if (res.ok) {
