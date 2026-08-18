@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers } from 'lucide-react';
 import { IProduct, ICategory } from '@/lib/types';
-
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '@/lib/seedData';
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
   const initialCategoryParam = searchParams.get('category') || 'All';
 
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [products, setProducts] = useState<IProduct[]>(INITIAL_PRODUCTS);
+  const [categories, setCategories] = useState<ICategory[]>(INITIAL_CATEGORIES);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam);
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'name'>('default');
