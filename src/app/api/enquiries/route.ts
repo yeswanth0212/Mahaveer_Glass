@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getFallbackData, saveFallbackData } from '@/lib/db';
-import { seedInitialData } from '@/lib/seed';
+import { getEnquiriesFromFirestore, addEnquiryToFirestore } from '@/lib/firestoreService';
 import { getAdminSession } from '@/lib/auth';
 
 export async function GET() {
@@ -9,33 +8,36 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  await seedInitialData();
-  const data = getFallbackData();
-  return NextResponse.json(data.enquiries || []);
+  try {
+    const enquiries = await getEnquiriesFromFirestore();
+    return NextResponse.json(enquiries);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to fetch enquiries' }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!body.name || !body.phone || !body.message) {
+    const name = body.customerName || body.name;
+    const phone = body.phone;
+    const message = body.message;
+
+    if (!name || !phone || !message) {
       return NextResponse.json({ error: 'Name, phone, and message are required' }, { status: 400 });
     }
 
-    const data = getFallbackData();
-    const newEnquiry = {
-      id: 'enq-' + Date.now(),
-      name: body.name,
-      phone: body.phone,
+    const newEnquiry = await addEnquiryToFirestore({
+      customerName: name,
+      name,
+      phone,
       email: body.email || '',
-      product: body.product || 'General Enquiry',
-      message: body.message,
-      date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      productId: body.productId || '',
+      productName: body.productName || body.product || 'General Enquiry',
+      product: body.product || body.productName || 'General Enquiry',
+      message,
       status: 'New'
-    };
-
-    if (!data.enquiries) data.enquiries = [];
-    data.enquiries.unshift(newEnquiry);
-    saveFallbackData(data);
+    });
 
     return NextResponse.json({ success: true, enquiry: newEnquiry }, { status: 201 });
   } catch (err: any) {

@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getFallbackData, saveFallbackData } from '@/lib/db';
-import { seedInitialData } from '@/lib/seed';
+import { getBusinessInfoFromFirestore, updateBusinessInfoInFirestore } from '@/lib/firestoreService';
 import { getAdminSession } from '@/lib/auth';
 
 export async function GET() {
-  await seedInitialData();
-  const data = getFallbackData();
-  return NextResponse.json(data.businessInfo);
+  try {
+    const info = await getBusinessInfoFromFirestore();
+    return NextResponse.json(info);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to fetch business info' }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {
@@ -17,15 +19,8 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json();
-    const data = getFallbackData();
-
-    data.businessInfo = {
-      ...data.businessInfo,
-      ...body
-    };
-
-    saveFallbackData(data);
-    return NextResponse.json(data.businessInfo);
+    const updated = await updateBusinessInfoInFirestore(body);
+    return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update business info' }, { status: 500 });
   }

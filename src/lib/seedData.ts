@@ -1,9 +1,8 @@
-import { connectDB, getFallbackData, saveFallbackData } from './db';
-import { hashPassword } from './auth';
 import { IProduct, ICategory, IGalleryItem, IBusinessInfo } from './types';
 
 export const INITIAL_BUSINESS_INFO: IBusinessInfo = {
   name: 'Mahaveer Glass & Plywood Hardware',
+  storeName: 'Mahaveer Glass & Plywood Hardware',
   address: 'No. 21, Chetty Street, Old Pallavaram, Chennai - 600 117',
   phones: ['78714 57430', '78455 59880', '90804 57430', '78456 03776'],
   whatsapp: '917871457430',
@@ -36,10 +35,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 110,
     priceDisplay: '₹110',
     shortDescription: 'High quality stainless steel keel fitting for durable door mounting.',
+    description: 'High quality stainless steel keel fitting for durable door mounting.',
     specifications: ['Size: 5 inches', 'Material: Grade 304 Stainless Steel', 'Finish: Satin / Matte'],
     variants: ['Standard S.S'],
     imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -49,10 +52,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 360,
     priceDisplay: '₹360',
     shortDescription: 'Premium solid brass keel for elegant traditional and modern wood doors.',
+    description: 'Premium solid brass keel for elegant traditional and modern wood doors.',
     specifications: ['Size: 5 inches', 'Material: Pure Brass', 'Finish: Polished Brass / Antique'],
     variants: ['Polished Brass', 'Antique Brass'],
     imageUrl: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -62,10 +69,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 85,
     priceDisplay: '₹85',
     shortDescription: 'Rust-resistant stainless steel tower bolt with smooth slide action.',
+    description: 'Rust-resistant stainless steel tower bolt with smooth slide action.',
     specifications: ['Length: 6 inches', 'Material: Stainless Steel', 'Includes mounting screws'],
     variants: ['S.S Finish'],
     imageUrl: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -75,10 +86,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 98,
     priceDisplay: '₹98',
     shortDescription: 'Heavy gauge 8 inch SS tower bolt ideal for main and internal doors.',
+    description: 'Heavy gauge 8 inch SS tower bolt ideal for main and internal doors.',
     specifications: ['Length: 8 inches', 'Material: Stainless Steel', 'Heavy Duty Rod'],
     variants: ['S.S Finish'],
     imageUrl: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -88,10 +103,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 240,
     priceDisplay: '₹240',
     shortDescription: 'Solid brass tower bolt with precision pin turn lock.',
+    description: 'Solid brass tower bolt with precision pin turn lock.',
     specifications: ['Length: 6 inches', 'Material: Solid Brass', 'Finish: Gold Polished'],
     variants: ['Brass Gold'],
     imageUrl: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -101,10 +120,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 280,
     priceDisplay: '₹280',
     shortDescription: 'Heavy duty brass 8-inch tower bolt designed for extra security and aesthetics.',
+    description: 'Heavy duty brass 8-inch tower bolt designed for extra security and aesthetics.',
     specifications: ['Length: 8 inches', 'Material: Solid Brass', 'Smooth Operation'],
     variants: ['Brass Gold', 'Antique'],
     imageUrl: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -114,10 +137,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 75,
     priceDisplay: '₹75',
     shortDescription: 'Durable rubber tip stainless steel floor/wall door stopper.',
+    description: 'Durable rubber tip stainless steel floor/wall door stopper.',
     specifications: ['Material: Stainless Steel + Rubber Buffer', 'Mount: Wall/Floor'],
     variants: ['S.S Matte'],
     imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -127,10 +154,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 290,
     priceDisplay: '₹290',
     shortDescription: 'Antique finish designer brass door stopper with heavy rubber dampener.',
+    description: 'Antique finish designer brass door stopper with heavy rubber dampener.',
     specifications: ['Material: Brass alloy', 'Finish: Antique Bronze', 'Heavy load resistance'],
     variants: ['Antique Copper', 'Antique Brass'],
     imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -140,10 +171,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 3100,
     priceDisplay: '₹3,100',
     shortDescription: 'Heavy duty dual latch rim lock for wood and iron security doors.',
+    description: 'Heavy duty dual latch rim lock for wood and iron security doors.',
     specifications: ['Mechanism: Brass Pin Cylinder', 'Keys: 3 Computerised Keys', 'Finish: Dark Metallic'],
     variants: ['Standard Rim Lock'],
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -153,10 +188,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 1500,
     priceDisplay: '₹1,500',
     shortDescription: 'Compact high-security rim lock suitable for apartment doors and cabinets.',
+    description: 'Compact high-security rim lock suitable for apartment doors and cabinets.',
     specifications: ['Lock Type: Smart Rim Latch', 'Material: Zinc Alloy / Brass cylinder'],
     variants: ['S.S Chrome'],
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -166,10 +205,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 260,
     priceDisplay: '₹260',
     shortDescription: 'Heavy gauge 10 inch stainless steel aldrop for main double doors.',
+    description: 'Heavy gauge 10 inch stainless steel aldrop for main double doors.',
     specifications: ['Length: 10 inches', 'Rod Thickness: 14mm', 'Material: Stainless Steel'],
     variants: ['S.S Gloss', 'S.S Matt'],
     imageUrl: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -179,10 +222,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 980,
     priceDisplay: '₹980',
     shortDescription: 'Luxurious 10 inch solid brass aldrop set with decorative rosettes.',
+    description: 'Luxurious 10 inch solid brass aldrop set with decorative rosettes.',
     specifications: ['Length: 10 inches', 'Material: 100% Solid Brass', 'Finish: Polished Brass / Antique'],
     variants: ['Polished Gold', 'Antique Brass'],
     imageUrl: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
   {
@@ -192,10 +239,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 95,
     priceDisplay: '₹95',
     shortDescription: 'Strong neodymium magnetic door catch to prevent door slamming.',
+    description: 'Strong neodymium magnetic door catch to prevent door slamming.',
     specifications: ['Holding Strength: High', 'Material: SS Shell + Neodymium Magnet'],
     variants: ['Silver', 'Bronze'],
     imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80',
     availability: 'In Stock',
+    available: true,
+    featured: true,
     isPriceListItem: true
   },
 
@@ -208,10 +259,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     priceDisplay: '₹650',
     typeVariant: 'KY - Antique / S.S',
     shortDescription: '7-inch mortise door handle lock set with key-operated mechanism.',
+    description: '7-inch mortise door handle lock set with key-operated mechanism.',
     specifications: ['Plate Size: 7 Inches', 'Type: Key (KY)', 'Finishes: Antique, S.S'],
     variants: ['Antique', 'S.S'],
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true,
+    featured: true
   },
   {
     id: 'prod-15',
@@ -221,10 +276,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     priceDisplay: '₹750',
     typeVariant: 'KY - Antique / S.S',
     shortDescription: '8-inch heavy mortise lock handle set with key entry mechanism.',
+    description: '8-inch heavy mortise lock handle set with key entry mechanism.',
     specifications: ['Plate Size: 8 Inches', 'Type: Key (KY)', 'Finishes: Antique, S.S'],
     variants: ['Antique', 'S.S'],
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true,
+    featured: true
   },
   {
     id: 'prod-16',
@@ -234,10 +293,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     priceDisplay: '₹1,800',
     typeVariant: 'CY - Antique / S.S / Brass',
     shortDescription: '8-inch double cylinder high security mortise handle lock set.',
+    description: '8-inch double cylinder high security mortise handle lock set.',
     specifications: ['Plate Size: 8 Inches', 'Type: Cylinder (CY)', 'Finishes: Antique, S.S, Brass'],
     variants: ['Antique', 'S.S', 'Brass'],
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true,
+    featured: true
   },
   {
     id: 'prod-17',
@@ -247,10 +310,14 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     priceDisplay: '₹2,800',
     typeVariant: 'CY - Antique / S.S / Brass',
     shortDescription: '10-inch premium architectural mortise lock handle for luxury timber doors.',
+    description: '10-inch premium architectural mortise lock handle for luxury timber doors.',
     specifications: ['Plate Size: 10 Inches', 'Type: Cylinder (CY)', 'Finishes: Antique, S.S, Brass'],
     variants: ['Antique', 'S.S', 'Brass'],
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true,
+    featured: true
   },
 
   // Glass, Plywood & Kitchen Hardware items
@@ -261,10 +328,13 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 450,
     priceDisplay: 'Starting from ₹450 / sq.ft',
     shortDescription: 'Clear and tinted safety toughened glass for partitions, doors and windows.',
+    description: 'Clear and tinted safety toughened glass for partitions, doors and windows.',
     specifications: ['Thickness: 8mm, 10mm, 12mm', 'Type: Clear / Frosted / Tinted', 'Edges: Polished'],
     variants: ['8mm Clear', '10mm Clear', '12mm Clear', 'Frosted'],
     imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true
   },
   {
     id: 'prod-19',
@@ -273,10 +343,13 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 110,
     priceDisplay: 'Starting from ₹110 / sq.ft',
     shortDescription: 'Boiling Water Proof marine plywood suitable for wardrobes, kitchens & heavy interiors.',
+    description: 'Boiling Water Proof marine plywood suitable for wardrobes, kitchens & heavy interiors.',
     specifications: ['Grade: IS 710 BWP', 'Thickness: 18mm', 'Core: Gurjan / Hardwood blend'],
     variants: ['7ft x 4ft', '8ft x 4ft'],
     imageUrl: 'https://images.unsplash.com/photo-1546484475-7f7bd55792da?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1546484475-7f7bd55792da?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true
   },
   {
     id: 'prod-20',
@@ -285,10 +358,13 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 1350,
     priceDisplay: '₹1,350 / sheet',
     shortDescription: 'Scratch-resistant high gloss wood grain & solid tone laminates.',
+    description: 'Scratch-resistant high gloss wood grain & solid tone laminates.',
     specifications: ['Sheet Size: 8ft x 4ft', 'Thickness: 1mm', 'Finish: High Gloss / Texture'],
     variants: ['Teak Wood', 'Walnut', 'White Gloss', 'Marble Look'],
     imageUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true
   },
   {
     id: 'prod-21',
@@ -297,10 +373,13 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 160,
     priceDisplay: '₹160 / pair',
     shortDescription: 'Auto-closing hydraulic cabinet hinges with 3D adjustment feature.',
+    description: 'Auto-closing hydraulic cabinet hinges with 3D adjustment feature.',
     specifications: ['Type: Full Overlay / Half Overlay / Inset', 'Material: Nickel Plated Steel'],
     variants: ['Full Overlay', 'Half Overlay', 'Inset'],
     imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true
   },
   {
     id: 'prod-22',
@@ -309,10 +388,13 @@ export const INITIAL_PRODUCTS: IProduct[] = [
     price: 2400,
     priceDisplay: '₹2,400',
     shortDescription: 'Smooth full-extension soft-close kitchen tandem drawer system.',
+    description: 'Smooth full-extension soft-close kitchen tandem drawer system.',
     specifications: ['Load Capacity: 45 KG', 'Depth: 500mm', 'Finish: Metallic Grey / White'],
     variants: ['Low Height', 'Medium Height', 'High Rail'],
     imageUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=600&auto=format&fit=crop&q=80',
-    availability: 'In Stock'
+    image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=600&auto=format&fit=crop&q=80',
+    availability: 'In Stock',
+    available: true
   }
 ];
 
@@ -322,6 +404,7 @@ export const INITIAL_GALLERY: IGalleryItem[] = [
     title: 'Mahaveer Store Showroom Front',
     category: 'Store',
     imageUrl: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&auto=format&fit=crop&q=80',
     date: '2026-01-15'
   },
   {
@@ -329,6 +412,7 @@ export const INITIAL_GALLERY: IGalleryItem[] = [
     title: 'Brass & SS Door Handles Display',
     category: 'Hardware',
     imageUrl: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=800&auto=format&fit=crop&q=80',
     date: '2026-01-20'
   },
   {
@@ -336,6 +420,7 @@ export const INITIAL_GALLERY: IGalleryItem[] = [
     title: 'Toughened Glass Installation Project',
     category: 'Glass Work',
     imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80',
     date: '2026-02-02'
   },
   {
@@ -343,6 +428,7 @@ export const INITIAL_GALLERY: IGalleryItem[] = [
     title: 'BWP Marine Plywood Stock',
     category: 'Plywood',
     imageUrl: 'https://images.unsplash.com/photo-1546484475-7f7bd55792da?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1546484475-7f7bd55792da?w=800&auto=format&fit=crop&q=80',
     date: '2026-02-10'
   },
   {
@@ -350,6 +436,7 @@ export const INITIAL_GALLERY: IGalleryItem[] = [
     title: 'Mortise & Digital Locks Display',
     category: 'Products',
     imageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=800&auto=format&fit=crop&q=80',
     date: '2026-02-15'
   },
   {
@@ -357,39 +444,7 @@ export const INITIAL_GALLERY: IGalleryItem[] = [
     title: 'Modular Kitchen Hardware Fittings',
     category: 'Projects',
     imageUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80',
     date: '2026-02-18'
   }
 ];
-
-export async function seedInitialData() {
-  const fallback = getFallbackData();
-  
-  if (!fallback.businessInfo) {
-    fallback.businessInfo = INITIAL_BUSINESS_INFO;
-  }
-  if (!fallback.categories || fallback.categories.length === 0) {
-    fallback.categories = INITIAL_CATEGORIES;
-  }
-  if (!fallback.products || fallback.products.length === 0) {
-    fallback.products = INITIAL_PRODUCTS;
-  }
-  if (!fallback.gallery || fallback.gallery.length === 0) {
-    fallback.gallery = INITIAL_GALLERY;
-  }
-
-  // Ensure default admin user
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@mahaveerhardware.com';
-  const adminPass = process.env.ADMIN_PASSWORD || 'Mahaveer@2026';
-  
-  if (!fallback.admin || fallback.admin.length === 0) {
-    const hashed = await hashPassword(adminPass);
-    fallback.admin = [{
-      id: 'admin-1',
-      email: adminEmail,
-      password: hashed,
-      createdAt: new Date().toISOString()
-    }];
-  }
-
-  saveFallbackData(fallback);
-}

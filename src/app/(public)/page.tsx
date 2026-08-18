@@ -15,7 +15,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import PriceListTable from '@/components/PriceListTable';
-import { INITIAL_CATEGORIES } from '@/lib/seed';
+import { INITIAL_CATEGORIES } from '@/lib/seedData';
 
 export const metadata = {
   title: 'Mahaveer Glass & Plywood Hardware | Old Pallavaram, Chennai',
