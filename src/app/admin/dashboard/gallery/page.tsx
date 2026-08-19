@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, AlertCircle, Upload, Loader2 } from 'lucide-react';
 import { IGalleryItem } from '@/lib/types';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 
 const CATEGORIES = ['Store', 'Products', 'Glass Work', 'Plywood', 'Hardware', 'Projects'];
 
@@ -14,6 +16,9 @@ export default function AdminGalleryPage() {
   const [category, setCategory] = useState<any>('Store');
   const [imageUrl, setImageUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const fetchGallery = async () => {
     setLoading(true);
@@ -31,10 +36,48 @@ export default function AdminGalleryPage() {
     fetchGallery();
   }, []);
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setUploadProgress(0);
+    setErrorMsg('');
+
+    try {
+      const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          setErrorMsg('Failed to upload image: ' + error.message);
+          setUploadingImage(false);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setImageUrl(downloadURL);
+          setUploadingImage(false);
+        }
+      );
+    } catch (err: any) {
+      setErrorMsg('Failed to upload image: ' + err.message);
+      setUploadingImage(false);
+    }
+  };
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !imageUrl) return;
+    if (!title || !imageUrl) {
+      setErrorMsg('Title and uploaded image are required.');
+      return;
+    }
     setSubmitting(true);
+    setErrorMsg('');
     try {
       const res = await fetch('/api/gallery', {
         method: 'POST',
@@ -45,9 +88,11 @@ export default function AdminGalleryPage() {
         setTitle('');
         setImageUrl('');
         fetchGallery();
+      } else {
+        setErrorMsg('Failed to save gallery item.');
       }
     } catch (err) {
-      console.error(err);
+      setErrorMsg('Network error.');
     } finally {
       setSubmitting(false);
     }
@@ -77,6 +122,13 @@ export default function AdminGalleryPage() {
             <Plus className="w-4 h-4 text-amber-500" /> Upload New Photo
           </h3>
           <form onSubmit={handleAdd} className="space-y-4 text-xs">
+            {errorMsg && (
+              <div className="p-3 bg-rose-950/70 border border-rose-800 text-rose-300 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
             <div>
               <label className="block font-bold text-stone-300 mb-1">Image Title *</label>
               <input
@@ -103,15 +155,44 @@ export default function AdminGalleryPage() {
             </div>
 
             <div>
-              <label className="block font-bold text-stone-300 mb-1">Image URL *</label>
-              <input
-                type="url"
-                required
-                placeholder="https://images.unsplash.com/..."
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full px-3 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 focus:border-amber-500"
-              />
+              <label className="block font-bold text-stone-300 mb-1">Gallery Image *</label>
+              <div className="flex flex-col items-center gap-4">
+                {imageUrl && (
+                  <img 
+                    src={imageUrl} 
+                    alt="Preview" 
+                    className="w-full h-40 rounded-xl object-cover border border-stone-800 bg-stone-950 shrink-0" 
+                  />
+                )}
+                <div className="w-full relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                    id="gallery-upload"
+                  />
+                  <label 
+                    htmlFor="gallery-upload"
+                    className={`flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                      uploadingImage ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-stone-700 bg-stone-950 hover:bg-stone-800 text-stone-400 hover:text-stone-300'
+                    }`}
+                  >
+                    {uploadingImage ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Uploading {Math.round(uploadProgress)}%...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5" />
+                        <span>Click to upload image</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+              </div>
             </div>
 
             <button

@@ -1,26 +1,31 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Phone, MapPin, Mail, ArrowUpRight } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-stone-950 text-stone-300 border-t border-stone-800">
+    <footer className="bg-black text-neutral-300 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-600 to-yellow-700 flex items-center justify-center text-stone-950 font-bold text-lg shadow-md border border-amber-500/40">
-                M
-              </div>
-              <span className="font-extrabold text-lg text-stone-100">
+              <Image 
+                src="/logo.png" 
+                alt="Mahaveer Hardware" 
+                width={40} 
+                height={40} 
+                className="rounded-lg shadow-md border border-neutral-800"
+              />
+              <span className="font-extrabold text-lg text-white">
                 MAHAVEER
               </span>
             </div>
-            <p className="text-sm text-stone-400 leading-relaxed">
+            <p className="text-sm text-neutral-400 leading-relaxed">
               Mahaveer Glass & Plywood Hardware is your trusted store in Old Pallavaram, Chennai for quality architectural glass, durable marine plywood, laminates, and premium door & furniture hardware.
             </p>
-            <p className="text-xs text-stone-500 font-medium">
+            <p className="text-xs text-neutral-500 font-medium">
               GST & Business Registration Available
             </p>
           </div>

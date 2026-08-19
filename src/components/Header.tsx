@@ -2,26 +2,27 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Phone, MessageSquare, Menu, X, ShieldCheck } from 'lucide-react';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-stone-900 text-stone-100 border-b border-amber-900/30 shadow-md">
+    <header className="sticky top-0 z-40 bg-black text-white border-b border-white/10 shadow-md">
       {/* Top Notification / Quick Contact Bar */}
-      <div className="bg-stone-950 px-4 py-2 border-b border-stone-800 text-xs text-stone-300">
+      <div className="bg-neutral-950 px-4 py-2 border-b border-white/5 text-xs text-neutral-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>No. 21, Chetty Street, Old Pallavaram, Chennai - 600 117</span>
           </div>
           <div className="flex items-center gap-4">
-            <a href="tel:7871457430" className="hover:text-amber-400 transition-colors flex items-center gap-1">
-              <Phone className="w-3.5 h-3.5 text-amber-500" />
+            <a href="tel:7871457430" className="hover:text-white transition-colors flex items-center gap-1">
+              <Phone className="w-3.5 h-3.5 text-white" />
               <span>78714 57430</span>
             </a>
-            <a href="tel:7845559880" className="hidden md:inline hover:text-amber-400 transition-colors">
+            <a href="tel:7845559880" className="hidden md:inline hover:text-white transition-colors">
               78455 59880
             </a>
             <a 
@@ -30,7 +31,7 @@ export default function Header() {
               rel="noopener noreferrer"
               className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-medium"
             >
-              <MessageSquare className="w-3.5 h-3.5 fill-emerald-400 text-stone-950" />
+              <MessageSquare className="w-3.5 h-3.5 fill-emerald-400 text-black" />
               <span>WhatsApp</span>
             </a>
           </div>
@@ -42,14 +43,18 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo & Brand Name */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-amber-600 via-amber-700 to-yellow-800 flex items-center justify-center text-stone-950 font-bold text-xl shadow-lg border border-amber-500/40 group-hover:scale-105 transition-transform">
-              M
-            </div>
+            <Image 
+              src="/logo.png" 
+              alt="Mahaveer Hardware" 
+              width={48} 
+              height={48} 
+              className="rounded-lg group-hover:scale-105 transition-transform"
+            />
             <div className="flex flex-col">
-              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-stone-100 group-hover:text-amber-400 transition-colors">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white group-hover:text-gray-300 transition-colors">
                 MAHAVEER
               </span>
-              <span className="text-xs tracking-wider text-amber-500/90 font-medium uppercase">
+              <span className="text-xs tracking-wider text-neutral-400 font-medium uppercase">
                 Glass & Plywood Hardware
               </span>
             </div>
