@@ -3,21 +3,21 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers } from 'lucide-react';
+import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers, Star, Sparkles } from 'lucide-react';
 import { IProduct, ICategory } from '@/lib/types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '@/lib/seedData';
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
   const initialCategoryParam = searchParams.get('category') || 'All';
+  const initialSearchParam = searchParams.get('search') || '';
 
   const [products, setProducts] = useState<IProduct[]>(INITIAL_PRODUCTS);
   const [categories, setCategories] = useState<ICategory[]>(INITIAL_CATEGORIES);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchParam);
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam);
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'name'>('default');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetchData() {
@@ -51,6 +51,9 @@ function ProductCatalogContent() {
   useEffect(() => {
     if (searchParams.get('category')) {
       setSelectedCategory(searchParams.get('category') || 'All');
+    }
+    if (searchParams.get('search')) {
+      setSearchQuery(searchParams.get('search') || '');
     }
   }, [searchParams]);
 
@@ -86,41 +89,46 @@ function ProductCatalogContent() {
   }, [products, selectedCategory, searchQuery, sortBy]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      {/* Page Title Header */}
-      <div className="border-b border-white/10 pb-6 space-y-2 relative">
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 blur-[50px] rounded-full pointer-events-none"></div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight relative z-10">
-          Glass, Plywood & Hardware Catalog
-        </h1>
-        <p className="text-neutral-400 text-sm sm:text-base relative z-10">
-          Browse our complete range of door locks, tower bolts, keels, aldrops, marine plywood and glass hardware.
-        </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      
+      {/* Header Banner */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Hardware & Glass Product Catalog
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Browse our complete range of door locks, tower bolts, keels, aldrops, marine plywood and glass hardware.
+          </p>
+        </div>
+        <div className="px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shrink-0">
+          {filteredProducts.length} Items Available
+        </div>
       </div>
 
       {/* Search Bar & Controls */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Search Field */}
-        <div className="md:col-span-8 relative group">
-          <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-white transition-colors" />
+        <div className="md:col-span-8 relative">
+          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-blue-600" />
           <input
             type="text"
-            placeholder="Search by product name, e.g., Mortise Lock, Brass Aldrop, Keel..."
+            placeholder="Search by product name, e.g. Mortise Lock, Brass Aldrop, Keel..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-neutral-900 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 text-sm transition-all shadow-inner"
+            className="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-blue-500/60 focus:border-blue-600 rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 text-xs sm:text-sm shadow-sm transition-all"
           />
         </div>
 
         {/* Sorting Dropdown */}
         <div className="md:col-span-4 flex items-center gap-2">
-          <label className="text-xs text-neutral-400 whitespace-nowrap font-medium">Sort By:</label>
+          <label className="text-xs text-slate-500 whitespace-nowrap font-bold">Sort By:</label>
           <select
             value={sortBy}
             onChange={(e: any) => setSortBy(e.target.value)}
-            className="w-full py-3 px-3 bg-neutral-900 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all shadow-inner"
+            className="w-full py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs sm:text-sm font-medium focus:outline-none focus:border-blue-500 shadow-sm"
           >
-            <option value="default">Featured / Default</option>
+            <option value="default">Featured / Best Sellers</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
             <option value="name">Name: A to Z</option>
@@ -128,14 +136,14 @@ function ProductCatalogContent() {
         </div>
       </div>
 
-      {/* Category Pills */}
+      {/* Category Filter Chips */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => setSelectedCategory('All')}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-300 border ${
+          className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
             selectedCategory === 'All'
-              ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-              : 'bg-black text-neutral-400 border-white/10 hover:border-white/30 hover:text-white'
+              ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:text-blue-600'
           }`}
         >
           All Products ({products.length})
@@ -144,10 +152,10 @@ function ProductCatalogContent() {
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.name)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-300 border ${
+            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
               selectedCategory.toLowerCase() === cat.name.toLowerCase()
-                ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-                : 'bg-black text-neutral-400 border-white/10 hover:border-white/30 hover:text-white'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:text-blue-600'
             }`}
           >
             {cat.name}
@@ -158,17 +166,17 @@ function ProductCatalogContent() {
       {/* Loading State */}
       {loading && (
         <div className="text-center py-16 space-y-3">
-          <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
-          <p className="text-neutral-400 text-sm animate-pulse">Loading products...</p>
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-slate-500 text-xs font-semibold">Loading catalog...</p>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && filteredProducts.length === 0 && (
-        <div className="text-center py-16 bg-neutral-900/40 backdrop-blur-sm rounded-2xl border border-white/5 p-8 space-y-3 shadow-inner">
-          <Layers className="w-12 h-12 text-neutral-600 mx-auto" />
-          <h3 className="text-white font-bold text-lg">No products available.</h3>
-          <p className="text-neutral-400 text-sm max-w-md mx-auto">
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8 space-y-3 shadow-sm">
+          <Layers className="w-12 h-12 text-slate-400 mx-auto" />
+          <h3 className="text-slate-800 font-bold text-lg">No products found</h3>
+          <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto">
             No products match your current search or category filter. Try clearing your search query or choosing another category.
           </p>
           <button
@@ -176,102 +184,103 @@ function ProductCatalogContent() {
               setSearchQuery('');
               setSelectedCategory('All');
             }}
-            className="mt-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded-lg border border-white/10 transition-colors"
+            className="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors shadow-sm"
           >
             Reset Filters
           </button>
         </div>
       )}
 
-      {/* Product Cards Grid */}
+      {/* Products Grid (Clean Flipkart Style) */}
       {!loading && filteredProducts.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {filteredProducts.map((product) => {
+            const originalPrice = Math.round(product.price * 1.25);
             const encodedMsg = encodeURIComponent(
-              `Hello Mahaveer Glass & Plywood Hardware, I am interested in ${product.name}. Please provide more details and availability.`
+              `Hello Mahaveer Glass & Plywood Hardware, I am interested in ${product.name}. Please confirm price and availability.`
             );
             const whatsappLink = `https://wa.me/917871457430?text=${encodedMsg}`;
 
             return (
               <div
                 key={product.id || product._id}
-                className="group bg-neutral-900/40 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-white/30 transition-all duration-500 shadow-lg hover:shadow-[0_0_25px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col justify-between hover:-translate-y-1 relative"
+                className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
               >
-                {/* Hover gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
-                
-                <div className="relative z-10">
+                <div>
                   {/* Product Image */}
-                  <div className="relative h-48 sm:h-52 bg-black overflow-hidden border-b border-white/5">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">
                     <img
-                      src={product.imageUrl}
+                      src={product.imageUrl || product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500"></div>
-                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/80 backdrop-blur-md rounded-md border border-white/20 text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">
-                      {product.category}
+
+                    {/* Rating Pill */}
+                    <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black flex items-center gap-0.5 shadow-md">
+                      <span>4.6</span>
+                      <Star className="w-2.5 h-2.5 fill-white text-emerald-700" />
                     </div>
+
+                    {/* Category tag */}
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-sm text-slate-800 text-[9px] font-bold uppercase shadow-sm">
+                      {product.category}
+                    </span>
+
+                    {/* Stock pill */}
                     {product.availability && (
-                      <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/90 border border-neutral-700 rounded text-[10px] font-bold text-neutral-300">
+                      <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold uppercase">
                         {product.availability}
-                      </div>
+                      </span>
                     )}
                   </div>
 
-                  {/* Product Information */}
-                  <div className="p-5 space-y-3">
-                    <Link href={`/products/${product.id || product._id}`}>
-                      <h3 className="text-base font-bold text-white group-hover:text-neutral-300 transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                    </Link>
+                  {/* Product Title */}
+                  <Link href={`/products/${product.id || product._id}`}>
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      {product.name}
+                    </h3>
+                  </Link>
 
-                    {product.typeVariant && (
-                      <p className="text-xs text-neutral-400 font-medium">
-                        Variant: {product.typeVariant}
-                      </p>
-                    )}
-
-                    <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2">
-                      {product.shortDescription}
+                  {/* Variant Tag */}
+                  {product.typeVariant && (
+                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                      {product.typeVariant}
                     </p>
+                  )}
 
-                    <div className="pt-2 border-t border-white/5 flex items-baseline justify-between">
-                      <span className="text-xs text-neutral-500">Price</span>
-                      <span className="text-lg font-extrabold text-white">
-                        {product.priceDisplay || `₹${product.price.toLocaleString('en-IN')}`}
+                  {/* Pricing */}
+                  <div className="mt-2 space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 line-through">
+                        ₹{originalPrice.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-sm font-black text-slate-900">
+                        ₹{product.price.toLocaleString('en-IN')}
                       </span>
                     </div>
+                    <p className="text-xs font-bold text-blue-600">
+                      Buy at ₹{product.price.toLocaleString('en-IN')}
+                    </p>
                   </div>
                 </div>
 
-                {/* Card Actions */}
-                <div className="p-5 pt-0 space-y-2 relative z-10">
+                {/* Card Action Buttons */}
+                <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1.5">
                   <Link
-                    href={`/products/${product.id || product._id}`}
-                    className="w-full py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 border border-white/10 hover:border-white/30"
+                    href={`/contact?product=${encodeURIComponent(product.name)}`}
+                    className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] transition-colors text-center"
                   >
-                    View Specifications & Details
+                    Details
                   </Link>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href={`/contact?product=${encodeURIComponent(product.name)}`}
-                      className="py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs transition-colors text-center shadow-[0_0_10px_rgba(255,255,255,0.1)] hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-                    >
-                      Enquire Now
-                    </Link>
-                    <a
-                      href={whatsappLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white font-bold text-xs transition-colors text-center flex items-center justify-center gap-1"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-white" />
-                      WhatsApp
-                    </a>
-                  </div>
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1 shadow-sm"
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    WhatsApp
+                  </a>
                 </div>
               </div>
             );
@@ -284,7 +293,7 @@ function ProductCatalogContent() {
 
 export default function ProductCatalogPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-stone-400 text-sm">Loading Catalog...</div>}>
+    <Suspense fallback={<div className="p-12 text-center text-slate-500 text-sm">Loading Catalog...</div>}>
       <ProductCatalogContent />
     </Suspense>
   );

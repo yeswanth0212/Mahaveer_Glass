@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import Image from 'next/image';
 import { 
   Phone, 
   MessageSquare, 
@@ -18,518 +18,387 @@ import {
   Award,
   Users,
   ShieldCheck,
-  Zap
+  Zap,
+  TrendingUp,
+  SlidersHorizontal
 } from 'lucide-react';
 import PriceListTable from '@/components/PriceListTable';
-import { INITIAL_CATEGORIES } from '@/lib/seedData';
+import { INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '@/lib/seedData';
+import { IProduct } from '@/lib/types';
 
-/* ─── Animated Counter ─── */
-function AnimatedCounter({ target, suffix = '', prefix = '' }: { target: number; suffix?: string; prefix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
+export default function HomePage() {
+  const [products, setProducts] = useState<IProduct[]>(INITIAL_PRODUCTS);
 
   useEffect(() => {
-    if (!inView) return;
-    let start = 0;
-    const duration = 2000;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setProducts(data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load products:', err);
       }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [inView, target]);
-
-  return (
-    <span ref={ref} className="tabular-nums">
-      {prefix}{count.toLocaleString('en-IN')}{suffix}
-    </span>
-  );
-}
-
-/* ─── Typewriter ─── */
-function TypewriterText({ words, className }: { words: string[]; className?: string }) {
-  const [currentWord, setCurrentWord] = useState(0);
-  const [currentChar, setCurrentChar] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const word = words[currentWord];
-    const timeout = deleting ? 40 : 100;
-
-    const timer = setTimeout(() => {
-      if (!deleting && currentChar < word.length) {
-        setCurrentChar(currentChar + 1);
-      } else if (!deleting && currentChar === word.length) {
-        setTimeout(() => setDeleting(true), 1500);
-      } else if (deleting && currentChar > 0) {
-        setCurrentChar(currentChar - 1);
-      } else if (deleting && currentChar === 0) {
-        setDeleting(false);
-        setCurrentWord((currentWord + 1) % words.length);
-      }
-    }, timeout);
-
-    return () => clearTimeout(timer);
-  }, [currentChar, deleting, currentWord, words]);
-
-  return (
-    <span className={className}>
-      {words[currentWord].slice(0, currentChar)}
-      <span className="animate-pulse">|</span>
-    </span>
-  );
-}
-
-/* ─── Floating Particles Background ─── */
-function FloatingParticles() {
-  const [particles, setParticles] = useState<Array<{ ix: number; iy: number; ax1: number; ay1: number; ax2: number; ay2: number; dur: number; del: number }>>([]);
-
-  useEffect(() => {
-    setParticles(
-      Array.from({ length: 20 }).map(() => ({
-        ix: Math.random() * 100,
-        iy: Math.random() * 100,
-        ax1: Math.random() * 100,
-        ay1: Math.random() * 100,
-        ax2: Math.random() * 100,
-        ay2: Math.random() * 100,
-        dur: 8 + Math.random() * 10,
-        del: Math.random() * 5,
-      }))
-    );
+    }
+    loadProducts();
   }, []);
 
-  if (particles.length === 0) return null;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-white/20 rounded-full"
-          initial={{
-            x: `${p.ix}%`,
-            y: `${p.iy}%`,
-            opacity: 0
-          }}
-          animate={{
-            y: [`${p.ay1}%`, `${p.ay2}%`],
-            x: [`${p.ax1}%`, `${p.ax2}%`],
-            opacity: [0, 0.5, 0]
-          }}
-          transition={{
-            duration: p.dur,
-            repeat: Infinity,
-            ease: 'linear',
-            delay: p.del
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* ─── Scroll Reveal Wrapper ─── */
-function ScrollReveal({ children, delay = 0, direction = 'up' }: { children: React.ReactNode; delay?: number; direction?: 'up' | 'left' | 'right' }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
-
-  const variants = {
-    hidden: {
-      opacity: 0,
-      y: direction === 'up' ? 60 : 0,
-      x: direction === 'left' ? -60 : direction === 'right' ? 60 : 0,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      x: 0,
-    }
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={inView ? 'visible' : 'hidden'}
-      variants={variants}
-      transition={{ duration: 0.7, delay, ease: [0.25, 0.4, 0.25, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* ─── Marquee ─── */
-function Marquee() {
-  const items = ['\u2605 Premium Hardware', '\u2605 Marine Plywood', '\u2605 Toughened Glass', '\u2605 Mortise Locks', '\u2605 Brass Aldrops', '\u2605 Tower Bolts', '\u2605 Door Hinges', '\u2605 Laminates'];
-  return (
-    <div className="overflow-hidden border-y border-white/5 bg-white/[0.02] py-4">
-      <motion.div
-        className="flex gap-12 whitespace-nowrap text-sm text-neutral-500 font-medium tracking-wide"
-        animate={{ x: ['0%', '-50%'] }}
-        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-      >
-        {[...items, ...items].map((item, i) => (
-          <span key={i} className="flex-shrink-0">{item}</span>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-/* ─── Main Page ─── */
-export default function HomePage() {
-  const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -100]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
-
-  const stats = [
-    { label: 'Products In Stock', value: 500, suffix: '+', icon: Layers },
-    { label: 'Years Of Service', value: 15, suffix: '+', icon: Award },
-    { label: 'Happy Customers', value: 10000, suffix: '+', icon: Users },
-    { label: 'Categories', value: 8, suffix: '', icon: DoorOpen },
+  const quickLookItems = [
+    { title: 'Brass Locks', sub: 'Mortise & Rim', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=400&auto=format&fit=crop&q=80', href: '/products?category=Locks%20%26%20Mortise' },
+    { title: 'Tower Bolts', sub: 'S.S & Brass', image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=400&auto=format&fit=crop&q=80', href: '/products?category=Tower%20Bolts' },
+    { title: 'Brass Aldrops', sub: 'Antique & Gold', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&auto=format&fit=crop&q=80', href: '/products?category=Brass%20Aldrops' },
+    { title: 'Marine Plywood', sub: 'IS:710 Grade', image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&auto=format&fit=crop&q=80', href: '/products?category=Plywood%20%26%20Laminates' },
   ];
 
   return (
-    <div className="overflow-hidden">
-      {/* 1. HERO */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-        <FloatingParticles />
-        
-        {/* Animated grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-        
-        {/* Radial glow */}
-        <motion.div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)' }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        />
+    <div className="bg-slate-50 min-h-screen pb-16 space-y-8 sm:space-y-12">
 
-        <motion.div 
-          className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-          style={{ y: heroY, opacity: heroOpacity }}
-        >
-          {/* Badge */}
-          <ScrollReveal>
-            <motion.div 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-neutral-300 text-xs sm:text-sm font-semibold tracking-widest mb-8"
-              whileHover={{ scale: 1.05, borderColor: 'rgba(255,255,255,0.3)' }}
-            >
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-              >
-                <Sparkles className="w-4 h-4 text-white" />
-              </motion.span>
-              MAHAVEER GLASS & PLYWOOD HARDWARE
-            </motion.div>
-          </ScrollReveal>
+      {/* 1. HERO PROMO BANNER */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="relative rounded-3xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white p-6 sm:p-12 overflow-hidden shadow-xl shadow-blue-500/10">
+          {/* Subtle background circles */}
+          <div className="absolute -right-10 -bottom-10 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute top-0 right-1/3 w-60 h-60 bg-blue-400/20 rounded-full blur-xl pointer-events-none"></div>
 
-          {/* Main Headline */}
-          <ScrollReveal delay={0.1}>
-            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tight text-white leading-[1.05] mb-6">
-              Quality Hardware
-              <br />
-              <span className="text-neutral-500">
-                <TypewriterText words={['Under One Roof', 'For Every Home', 'Built To Last', 'At Best Prices']} />
-              </span>
-            </h1>
-          </ScrollReveal>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-blue-100 text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                No. 1 Hardware Store in Old Pallavaram, Chennai
+              </div>
 
-          {/* Subtitle */}
-          <ScrollReveal delay={0.2}>
-            <p className="text-base sm:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed mb-10">
-              Premium glass, marine plywood, laminates & architectural hardware — serving Chennai since over a decade.
-            </p>
-          </ScrollReveal>
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
+                Premium Glass, Marine Plywood & Architectural Hardware
+              </h1>
 
-          {/* CTA Buttons */}
-          <ScrollReveal delay={0.3}>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
+              <p className="text-blue-100 text-xs sm:text-base max-w-2xl leading-relaxed">
+                Direct wholesale & retail stocks of Brass Keels, Aldrops, Mortise Locks, Toughened Glass fittings and heavy-duty hinges at the best market prices.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
                   href="/products"
-                  className="group px-8 py-4 rounded-2xl bg-white text-black font-bold text-base shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] transition-shadow flex items-center gap-3"
+                  className="px-6 py-3 rounded-full bg-white text-blue-700 font-extrabold text-xs sm:text-sm hover:bg-blue-50 shadow-lg shadow-black/10 transition-all flex items-center gap-2 active:scale-95"
                 >
-                  View Products
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Explore All Products
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
-              </motion.div>
 
-              <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
-                <Link
-                  href="/contact"
-                  className="px-8 py-4 rounded-2xl bg-transparent border-2 border-white/20 text-white font-bold text-base hover:border-white/50 transition-colors"
-                >
-                  Get a Quote
-                </Link>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
                 <a
                   href="https://wa.me/917871457430?text=Hello%20Mahaveer%20Glass%20%26%20Plywood%20Hardware,%20I%20am%20interested%20in%20your%20products."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-8 py-4 rounded-2xl bg-neutral-900 border border-neutral-800 text-white font-bold text-base hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                  className="px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-md"
                 >
-                  <MessageSquare className="w-5 h-5" />
+                  <MessageSquare className="w-4 h-4 fill-white text-emerald-500" />
                   WhatsApp Us
                 </a>
-              </motion.div>
+
+                <a
+                  href="tel:7871457430"
+                  className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
+                >
+                  <Phone className="w-4 h-4" />
+                  78714 57430
+                </a>
+              </div>
             </div>
-          </ScrollReveal>
 
-          {/* Phone */}
-          <ScrollReveal delay={0.4}>
-            <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm text-neutral-500">
-              <span className="flex items-center gap-2 font-semibold text-neutral-300">
-                <Phone className="w-4 h-4 text-white" /> Store Hotline:
-              </span>
-              <a href="tel:7871457430" className="hover:text-white transition-colors">78714 57430</a>
-              <span className="text-white/20">|</span>
-              <a href="tel:7845559880" className="hover:text-white transition-colors">78455 59880</a>
-              <span className="text-white/20">|</span>
-              <a href="tel:9080457430" className="hover:text-white transition-colors">90804 57430</a>
+            {/* Hero Quick Highlight Card */}
+            <div className="lg:col-span-4 hidden lg:block">
+              <div className="bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-white/40 shadow-2xl text-slate-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Fast Enquiry</span>
+                  <span className="flex items-center gap-1 text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    Store Open Today
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Call or visit our Chennai store for on-the-spot quotes for carpenters, interior designers and builders.
+                </p>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-[11px] space-y-1">
+                  <div className="flex justify-between text-slate-500">
+                    <span>Mortise Locks</span>
+                    <span className="font-bold text-slate-900">From ₹1,200</span>
+                  </div>
+                  <div className="flex justify-between text-slate-500">
+                    <span>Brass Aldrops (10")</span>
+                    <span className="font-bold text-slate-900">From ₹450</span>
+                  </div>
+                  <div className="flex justify-between text-slate-500">
+                    <span>Marine Plywood</span>
+                    <span className="font-bold text-slate-900">Wholesale Rates</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </ScrollReveal>
-
-          {/* Scroll indicator */}
-          <motion.div
-            className="mt-16 flex flex-col items-center text-neutral-500 text-xs"
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <span className="mb-2">Scroll to explore</span>
-            <div className="w-5 h-8 border-2 border-white/20 rounded-full flex items-start justify-center p-1">
-              <motion.div
-                className="w-1.5 h-1.5 bg-white rounded-full"
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Marquee Banner */}
-      <Marquee />
-
-      {/* 2. STATS SECTION */}
-      <section className="py-20 bg-black relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <ScrollReveal key={i} delay={i * 0.1}>
-                  <motion.div
-                    className="group relative p-8 rounded-3xl bg-neutral-900/30 border border-white/5 hover:border-white/20 transition-all duration-500 text-center overflow-hidden"
-                    whileHover={{ y: -5, scale: 1.02 }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="relative z-10">
-                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-white group-hover:border-white flex items-center justify-center mx-auto mb-4 transition-all duration-500">
-                        <Icon className="w-6 h-6 text-neutral-400 group-hover:text-black transition-colors duration-500" />
-                      </div>
-                      <div className="text-3xl sm:text-4xl font-black text-white mb-2">
-                        <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                      </div>
-                      <p className="text-xs text-neutral-500 uppercase tracking-widest font-semibold">{stat.label}</p>
-                    </div>
-                  </motion.div>
-                </ScrollReveal>
-              );
-            })}
           </div>
         </div>
       </section>
 
-      {/* 3. PRODUCT CATEGORIES */}
-      <section className="py-24 bg-black relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-[0.3em] font-bold">Our Range</span>
-              <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-                Explore Product Categories
+      {/* 2. "STILL LOOKING FOR THESE?" (FLIPKART STYLE CONTAINER) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-100/90 border border-blue-100 rounded-3xl p-5 sm:p-7 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                Still looking for these?
               </h2>
-              <p className="text-neutral-400 text-base sm:text-lg leading-relaxed">
-                From heavy-duty brass door locks to premium laminates and toughened glass fittings.
-              </p>
+              <p className="text-xs text-slate-500 mt-0.5">Popular categories frequently checked by Chennai customers</p>
             </div>
-          </ScrollReveal>
+            <Link 
+              href="/products" 
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
+            >
+              View All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {INITIAL_CATEGORIES.map((cat, i) => (
-              <ScrollReveal key={cat.id} delay={i * 0.08}>
-                <motion.div whileHover={{ y: -8, scale: 1.02 }} transition={{ type: 'spring', stiffness: 300 }}>
-                  <Link
-                    href={`/products?category=${encodeURIComponent(cat.name)}`}
-                    className="group block p-7 rounded-3xl bg-neutral-900/30 backdrop-blur-sm border border-white/5 hover:border-white/30 transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,255,255,0.05)] relative overflow-hidden h-full"
-                  >
-                    {/* Animated corner glow */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-bl-full" />
-
-                    <div className="space-y-5 relative z-10">
-                      <motion.div 
-                        className="w-14 h-14 rounded-2xl bg-black border border-white/10 group-hover:border-white group-hover:bg-white flex items-center justify-center text-neutral-400 group-hover:text-black transition-all duration-500 shadow-lg"
-                        whileHover={{ rotate: 5 }}
-                      >
-                        {cat.name.includes('Lock') ? <Lock className="w-7 h-7" /> :
-                         cat.name.includes('Plywood') || cat.name.includes('Laminates') ? <Layers className="w-7 h-7" /> :
-                         <DoorOpen className="w-7 h-7" />}
-                      </motion.div>
-                      <h3 className="text-xl font-bold text-neutral-200 group-hover:text-white transition-colors duration-300">
-                        {cat.name}
-                      </h3>
-                      <p className="text-sm text-neutral-500 group-hover:text-neutral-400 leading-relaxed transition-colors duration-300">
-                        {cat.description}
-                      </p>
-                    </div>
-                    <div className="mt-6 pt-5 border-t border-white/5 group-hover:border-white/20 flex items-center justify-between text-sm font-semibold text-neutral-500 group-hover:text-white transition-all duration-300 relative z-10">
-                      <span>Explore</span>
-                      <motion.div 
-                        className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-300"
-                        whileHover={{ x: 5 }}
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </motion.div>
-                    </div>
-                  </Link>
-                </motion.div>
-              </ScrollReveal>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {quickLookItems.map((item, i) => (
+              <Link
+                key={i}
+                href={item.href}
+                className="group bg-white rounded-2xl p-3 border border-slate-200/80 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-100 mb-2.5">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors truncate">
+                    {item.title}
+                  </p>
+                  <p className="text-[11px] font-semibold text-slate-400">
+                    {item.sub}
+                  </p>
+                  <span className="text-[11px] font-bold text-blue-600 mt-1 inline-block">
+                    View Store →
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Marquee 2 */}
-      <Marquee />
+      {/* 3. "SUGGESTED FOR YOU" PRODUCT CARDS (EXACT FLIPKART STYLE) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Suggested For You
+            </h2>
+            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+              Best Sellers
+            </span>
+          </div>
 
-      {/* 4. PRICE LIST */}
-      <section className="py-24 bg-black relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/[0.03] blur-[120px] rounded-full pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <ScrollReveal>
-            <PriceListTable />
-          </ScrollReveal>
+          <Link
+            href="/products"
+            className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md shadow-slate-900/10"
+            title="Browse all products"
+          >
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Product Cards Grid with Rating Pills & Price Format */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          {products.slice(0, 10).map((product) => {
+            const originalPrice = Math.round(product.price * 1.25);
+            const encodedMsg = encodeURIComponent(
+              `Hello Mahaveer Glass & Plywood Hardware, I am interested in ${product.name}. Please confirm price and availability.`
+            );
+            const whatsappLink = `https://wa.me/917871457430?text=${encodedMsg}`;
+
+            return (
+              <div
+                key={product.id || product._id}
+                className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
+              >
+                <div>
+                  {/* Product Image Box with Rating Badge */}
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">
+                    <img
+                      src={product.imageUrl || product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+
+                    {/* Rating Pill (bottom left like Flipkart screenshot) */}
+                    <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black flex items-center gap-0.5 shadow-md">
+                      <span>4.6</span>
+                      <Star className="w-2.5 h-2.5 fill-white text-emerald-700" />
+                    </div>
+
+                    {/* Stock pill */}
+                    {product.availability && (
+                      <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold uppercase">
+                        {product.availability}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Product Title */}
+                  <Link href={`/products`}>
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
+                  </Link>
+
+                  {/* Variant Tag */}
+                  {product.typeVariant && (
+                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                      {product.typeVariant}
+                    </p>
+                  )}
+
+                  {/* Pricing (MRP strikethrough + Current Price + Blue Buy Tag) */}
+                  <div className="mt-2 space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 line-through">
+                        ₹{originalPrice.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-sm font-black text-slate-900">
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-blue-600">
+                      Buy at ₹{product.price.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card Action Button */}
+                <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1.5">
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1 shadow-sm"
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    Enquire
+                  </a>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* 5. WHY CHOOSE US */}
-      <section className="py-24 bg-black relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-[0.3em] font-bold">Why Us</span>
-              <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-                Why Choose Mahaveer?
+      {/* 4. EXPLORE CATEGORIES GRID */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Shop By Product Category
               </h2>
-              <p className="text-neutral-400 text-base sm:text-lg">
-                Trusted by contractors, builders, and homeowners across Chennai.
-              </p>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">Direct store supply in Old Pallavaram, Chennai</p>
             </div>
-          </ScrollReveal>
+            <Link href="/products" className="text-xs font-bold text-blue-600 hover:text-blue-700">
+              View Catalog →
+            </Link>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { icon: ShieldCheck, title: 'Wide Range of Hardware', desc: 'S.S & Brass keels, tower bolts, aldrops, rim locks, mortise locks, and magnetic catchers under one roof.' },
-              { icon: MapPin, title: 'Prime Location', desc: 'No. 21, Chetty Street, Old Pallavaram \u2014 easy access for contractors, carpenters, and builders.' },
-              { icon: Phone, title: 'Direct Assistance', desc: 'WhatsApp and phone support to verify specs, dimensions, finish variants and current prices instantly.' },
-              { icon: Zap, title: 'Quality Products', desc: 'We stock only industry-grade products from trusted manufacturers for long-lasting durability.' },
-              { icon: Clock, title: 'Quick Service', desc: 'Walk-in or call ahead \u2014 we get your order ready quickly so you can get back to your project.' },
-              { icon: Star, title: 'Customer Focused', desc: 'Personalized advice on hardware grade, lock sizes, and finish variants (Antique / S.S / Brass).' },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <ScrollReveal key={i} delay={i * 0.08}>
-                  <motion.div
-                    className="group relative p-8 rounded-3xl bg-neutral-900/20 border border-white/5 hover:border-white/20 transition-all duration-500 overflow-hidden"
-                    whileHover={{ y: -5 }}
-                  >
-                    <motion.div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                      style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(255,255,255,0.02) 100%)' }}
-                    />
-                    
-                    <div className="relative z-10">
-                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-white group-hover:border-white flex items-center justify-center mb-6 transition-all duration-500">
-                        <Icon className="w-6 h-6 text-neutral-400 group-hover:text-black transition-colors duration-500" />
-                      </div>
-                      <h3 className="text-lg font-bold text-white mb-3">{item.title}</h3>
-                      <p className="text-sm text-neutral-500 group-hover:text-neutral-400 leading-relaxed transition-colors">{item.desc}</p>
-                    </div>
-                  </motion.div>
-                </ScrollReveal>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {INITIAL_CATEGORIES.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${encodeURIComponent(cat.name)}`}
+                className="group p-5 rounded-2xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 transition-all flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                    {cat.name.includes('Lock') ? <Lock className="w-5 h-5" /> :
+                     cat.name.includes('Plywood') || cat.name.includes('Laminates') ? <Layers className="w-5 h-5" /> :
+                     <DoorOpen className="w-5 h-5" />}
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    {cat.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                    {cat.description}
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+                  Browse Products <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 6. STORE CTA */}
-      <section className="py-24 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <motion.div 
-              className="relative p-12 sm:p-16 rounded-[2rem] border border-white/10 overflow-hidden group"
-              whileHover={{ borderColor: 'rgba(255,255,255,0.2)' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-neutral-900 via-neutral-900/80 to-black" />
-              <motion.div 
-                className="absolute inset-0 opacity-20"
-                animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
-                transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
-                style={{
-                  backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.05) 0%, transparent 50%)',
-                  backgroundSize: '200% 200%'
-                }}
-              />
+      {/* 5. CURRENT PRICE LIST TABLE */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PriceListTable />
+      </section>
 
-              <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-10">
-                <div className="space-y-4 text-center lg:text-left max-w-2xl">
-                  <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-                    Visit Our Store
-                  </h2>
-                  <p className="text-neutral-400 text-base sm:text-lg">
-                    No. 21, Chetty Street, Old Pallavaram, Chennai - 600 117. Get the best prices on hardware, glass, and plywood.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-                  <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
-                    <a
-                      href="tel:7871457430"
-                      className="px-8 py-4 rounded-2xl bg-black border-2 border-white/20 text-white font-bold text-sm hover:border-white/50 transition-all flex items-center gap-2"
-                    >
-                      <Phone className="w-4 h-4" />
-                      Call 78714 57430
-                    </a>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
-                    <Link
-                      href="/contact"
-                      className="px-8 py-4 rounded-2xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)]"
-                    >
-                      Get Directions \u2192
-                    </Link>
-                  </motion.div>
-                </div>
+      {/* 6. WHY CHOOSE MAHAVEER & LOCATION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+            <div className="lg:col-span-7 space-y-4">
+              <span className="text-blue-400 text-xs font-bold uppercase tracking-widest">Chennai Hardware Distributor</span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
+                Visit Our Old Pallavaram Store
+              </h2>
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Situated at No. 21, Chetty Street, Old Pallavaram. We stock complete hardware lines, toughened glass keels, marine plywood, and locks for contractors, carpenters, and homeowners.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-2">
+                <a
+                  href="tel:7871457430"
+                  className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                >
+                  <Phone className="w-4 h-4" />
+                  Call 78714 57430
+                </a>
+                <Link
+                  href="/contact"
+                  className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs sm:text-sm transition-all"
+                >
+                  Store Directions →
+                </Link>
               </div>
-            </motion.div>
-          </ScrollReveal>
+            </div>
+
+            <div className="lg:col-span-5 grid grid-cols-2 gap-3 text-slate-900">
+              <div className="p-4 rounded-2xl bg-white space-y-1">
+                <ShieldCheck className="w-6 h-6 text-blue-600" />
+                <h4 className="font-extrabold text-xs">Quality Hardware</h4>
+                <p className="text-[11px] text-slate-500">Brass & Stainless Steel</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white space-y-1">
+                <Award className="w-6 h-6 text-blue-600" />
+                <h4 className="font-extrabold text-xs">Best Pricing</h4>
+                <p className="text-[11px] text-slate-500">Direct Wholesale Rates</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white space-y-1">
+                <Zap className="w-6 h-6 text-blue-600" />
+                <h4 className="font-extrabold text-xs">Instant Stock</h4>
+                <p className="text-[11px] text-slate-500">Ready in Store</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white space-y-1">
+                <Users className="w-6 h-6 text-blue-600" />
+                <h4 className="font-extrabold text-xs">Contractor Deals</h4>
+                <p className="text-[11px] text-slate-500">Special Bulk Quotes</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
     </div>
   );
 }

@@ -25,38 +25,38 @@ const ESTIMATE_ITEMS = [
 
 export default function PriceListTable() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {/* Standard Door Hardware Price List */}
-      <div className="bg-stone-900 rounded-2xl border border-stone-800 shadow-xl p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-stone-800 pb-4">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-2xl font-bold text-stone-100">
-              Door Hardware Current Price List
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Door Hardware Store Price List
             </h3>
-            <p className="text-sm text-stone-400 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Transparent, competitive retail rates at Mahaveer Glass & Plywood Hardware.
             </p>
           </div>
-          <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold rounded-full">
-            In-Store Verified
+          <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-full">
+            ✓ In-Store Verified
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-stone-300">
-            <thead className="bg-stone-950 text-stone-400 uppercase text-xs tracking-wider border-b border-stone-800">
+          <table className="w-full text-left text-xs sm:text-sm text-slate-700">
+            <thead className="bg-slate-50 text-slate-600 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
               <tr>
-                <th scope="col" className="px-6 py-4 rounded-tl-lg">Product Description</th>
-                <th scope="col" className="px-6 py-4">Category</th>
-                <th scope="col" className="px-6 py-4 text-right rounded-tr-lg">Price</th>
+                <th scope="col" className="px-6 py-3.5 rounded-tl-xl">Product Description</th>
+                <th scope="col" className="px-6 py-3.5">Category</th>
+                <th scope="col" className="px-6 py-3.5 text-right rounded-tr-xl">Store Price</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-800">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {PRICE_LIST_ITEMS.map((item, index) => (
-                <tr key={index} className="hover:bg-stone-850 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-stone-100">{item.name}</td>
-                  <td className="px-6 py-4 text-stone-400">{item.category}</td>
-                  <td className="px-6 py-4 font-bold text-amber-400 text-right text-base">{item.price}</td>
+                <tr key={index} className="hover:bg-blue-50/40 transition-colors">
+                  <td className="px-6 py-3.5 font-bold text-slate-900">{item.name}</td>
+                  <td className="px-6 py-3.5 text-slate-500">{item.category}</td>
+                  <td className="px-6 py-3.5 font-black text-blue-600 text-right">{item.price}</td>
                 </tr>
               ))}
             </tbody>
@@ -65,37 +65,37 @@ export default function PriceListTable() {
       </div>
 
       {/* Mortise Locks & Estimate Items Table */}
-      <div className="bg-stone-900 rounded-2xl border border-stone-800 shadow-xl p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-stone-800 pb-4">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-2xl font-bold text-stone-100">
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               Mortise Locks & Finish Variants
             </h3>
-            <p className="text-sm text-stone-400 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Available in Antique, Stainless Steel (S.S), and Polished Brass finishes.
             </p>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-stone-300">
-            <thead className="bg-stone-950 text-stone-400 uppercase text-xs tracking-wider border-b border-stone-800">
+          <table className="w-full text-left text-xs sm:text-sm text-slate-700">
+            <thead className="bg-slate-50 text-slate-600 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
               <tr>
-                <th scope="col" className="px-6 py-4 rounded-tl-lg">Mortise Lock Model</th>
-                <th scope="col" className="px-6 py-4">Type / Available Variants</th>
-                <th scope="col" className="px-6 py-4 text-right rounded-tr-lg">Amount</th>
+                <th scope="col" className="px-6 py-3.5 rounded-tl-xl">Mortise Lock Model</th>
+                <th scope="col" className="px-6 py-3.5">Type / Available Variants</th>
+                <th scope="col" className="px-6 py-3.5 text-right rounded-tr-xl">Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-800">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {ESTIMATE_ITEMS.map((item, index) => (
-                <tr key={index} className="hover:bg-stone-850 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-stone-100">{item.name}</td>
-                  <td className="px-6 py-4 text-stone-300 font-medium">
-                    <span className="px-2.5 py-1 rounded bg-stone-800 border border-stone-700 text-xs">
+                <tr key={index} className="hover:bg-blue-50/40 transition-colors">
+                  <td className="px-6 py-3.5 font-bold text-slate-900">{item.name}</td>
+                  <td className="px-6 py-3.5">
+                    <span className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
                       {item.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-amber-400 text-right text-base">{item.price}</td>
+                  <td className="px-6 py-3.5 font-black text-blue-600 text-right">{item.price}</td>
                 </tr>
               ))}
             </tbody>
