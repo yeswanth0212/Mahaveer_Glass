@@ -1,9 +1,9 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { 
-  ShieldCheck, 
-  CheckCircle2, 
-  MapPin, 
   Phone, 
   MessageSquare, 
   ArrowRight, 
@@ -11,238 +11,523 @@ import {
   Lock, 
   Layers, 
   Sparkles,
-  Wrench,
-  ChevronRight
+  ChevronRight,
+  Star,
+  MapPin,
+  Clock,
+  Award,
+  Users,
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 import PriceListTable from '@/components/PriceListTable';
 import { INITIAL_CATEGORIES } from '@/lib/seedData';
 
-export const metadata = {
-  title: 'Mahaveer Glass & Plywood Hardware | Old Pallavaram, Chennai',
-  description: 'Quality glass, marine plywood, laminates, door locks, hinges, aldrops, tower bolts and architectural hardware store in Old Pallavaram, Chennai.',
-};
+/* ─── Animated Counter ─── */
+function AnimatedCounter({ target, suffix = '', prefix = '' }: { target: number; suffix?: string; prefix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
 
-export default function HomePage() {
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const duration = 2000;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+
   return (
-    <div className="space-y-16 lg:space-y-24 pb-16">
-      {/* 1. HERO SECTION */}
-      <section className="relative bg-gradient-to-b from-stone-900 via-stone-950 to-stone-950 pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden border-b border-stone-800">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1917_1px,transparent_1px),linear-gradient(to_bottom,#1f1917_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40"></div>
+    <span ref={ref} className="tabular-nums">
+      {prefix}{count.toLocaleString('en-IN')}{suffix}
+    </span>
+  );
+}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Hero Left Content */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs sm:text-sm font-semibold tracking-wide">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                MAHAVEER GLASS & PLYWOOD HARDWARE
-              </div>
+/* ─── Typewriter ─── */
+function TypewriterText({ words, className }: { words: string[]; className?: string }) {
+  const [currentWord, setCurrentWord] = useState(0);
+  const [currentChar, setCurrentChar] = useState(0);
+  const [deleting, setDeleting] = useState(false);
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-stone-100 leading-[1.15]">
-                Quality Glass, Plywood & Hardware <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600">Under One Roof</span>
-              </h1>
+  useEffect(() => {
+    const word = words[currentWord];
+    const timeout = deleting ? 40 : 100;
 
-              <p className="text-base sm:text-lg text-stone-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Reliable products, quality hardware and trusted service for your home, office and commercial projects. Serving Old Pallavaram and all across Chennai.
-              </p>
+    const timer = setTimeout(() => {
+      if (!deleting && currentChar < word.length) {
+        setCurrentChar(currentChar + 1);
+      } else if (!deleting && currentChar === word.length) {
+        setTimeout(() => setDeleting(true), 1500);
+      } else if (deleting && currentChar > 0) {
+        setCurrentChar(currentChar - 1);
+      } else if (deleting && currentChar === 0) {
+        setDeleting(false);
+        setCurrentWord((currentWord + 1) % words.length);
+      }
+    }, timeout);
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+    return () => clearTimeout(timer);
+  }, [currentChar, deleting, currentWord, words]);
+
+  return (
+    <span className={className}>
+      {words[currentWord].slice(0, currentChar)}
+      <span className="animate-pulse">|</span>
+    </span>
+  );
+}
+
+/* ─── Floating Particles Background ─── */
+function FloatingParticles() {
+  const [particles, setParticles] = useState<Array<{ ix: number; iy: number; ax1: number; ay1: number; ax2: number; ay2: number; dur: number; del: number }>>([]);
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 20 }).map(() => ({
+        ix: Math.random() * 100,
+        iy: Math.random() * 100,
+        ax1: Math.random() * 100,
+        ay1: Math.random() * 100,
+        ax2: Math.random() * 100,
+        ay2: Math.random() * 100,
+        dur: 8 + Math.random() * 10,
+        del: Math.random() * 5,
+      }))
+    );
+  }, []);
+
+  if (particles.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-white/20 rounded-full"
+          initial={{
+            x: `${p.ix}%`,
+            y: `${p.iy}%`,
+            opacity: 0
+          }}
+          animate={{
+            y: [`${p.ay1}%`, `${p.ay2}%`],
+            x: [`${p.ax1}%`, `${p.ax2}%`],
+            opacity: [0, 0.5, 0]
+          }}
+          transition={{
+            duration: p.dur,
+            repeat: Infinity,
+            ease: 'linear',
+            delay: p.del
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Scroll Reveal Wrapper ─── */
+function ScrollReveal({ children, delay = 0, direction = 'up' }: { children: React.ReactNode; delay?: number; direction?: 'up' | 'left' | 'right' }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+
+  const variants = {
+    hidden: {
+      opacity: 0,
+      y: direction === 'up' ? 60 : 0,
+      x: direction === 'left' ? -60 : direction === 'right' ? 60 : 0,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      x: 0,
+    }
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={inView ? 'visible' : 'hidden'}
+      variants={variants}
+      transition={{ duration: 0.7, delay, ease: [0.25, 0.4, 0.25, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ─── Marquee ─── */
+function Marquee() {
+  const items = ['\u2605 Premium Hardware', '\u2605 Marine Plywood', '\u2605 Toughened Glass', '\u2605 Mortise Locks', '\u2605 Brass Aldrops', '\u2605 Tower Bolts', '\u2605 Door Hinges', '\u2605 Laminates'];
+  return (
+    <div className="overflow-hidden border-y border-white/5 bg-white/[0.02] py-4">
+      <motion.div
+        className="flex gap-12 whitespace-nowrap text-sm text-neutral-500 font-medium tracking-wide"
+        animate={{ x: ['0%', '-50%'] }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+      >
+        {[...items, ...items].map((item, i) => (
+          <span key={i} className="flex-shrink-0">{item}</span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─── Main Page ─── */
+export default function HomePage() {
+  const { scrollYProgress } = useScroll();
+  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -100]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
+
+  const stats = [
+    { label: 'Products In Stock', value: 500, suffix: '+', icon: Layers },
+    { label: 'Years Of Service', value: 15, suffix: '+', icon: Award },
+    { label: 'Happy Customers', value: 10000, suffix: '+', icon: Users },
+    { label: 'Categories', value: 8, suffix: '', icon: DoorOpen },
+  ];
+
+  return (
+    <div className="overflow-hidden">
+      {/* 1. HERO */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        <FloatingParticles />
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+        
+        {/* Radial glow */}
+        <motion.div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)' }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        <motion.div 
+          className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+          style={{ y: heroY, opacity: heroOpacity }}
+        >
+          {/* Badge */}
+          <ScrollReveal>
+            <motion.div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-neutral-300 text-xs sm:text-sm font-semibold tracking-widest mb-8"
+              whileHover={{ scale: 1.05, borderColor: 'rgba(255,255,255,0.3)' }}
+            >
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+              >
+                <Sparkles className="w-4 h-4 text-white" />
+              </motion.span>
+              MAHAVEER GLASS & PLYWOOD HARDWARE
+            </motion.div>
+          </ScrollReveal>
+
+          {/* Main Headline */}
+          <ScrollReveal delay={0.1}>
+            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tight text-white leading-[1.05] mb-6">
+              Quality Hardware
+              <br />
+              <span className="text-neutral-500">
+                <TypewriterText words={['Under One Roof', 'For Every Home', 'Built To Last', 'At Best Prices']} />
+              </span>
+            </h1>
+          </ScrollReveal>
+
+          {/* Subtitle */}
+          <ScrollReveal delay={0.2}>
+            <p className="text-base sm:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed mb-10">
+              Premium glass, marine plywood, laminates & architectural hardware — serving Chennai since over a decade.
+            </p>
+          </ScrollReveal>
+
+          {/* CTA Buttons */}
+          <ScrollReveal delay={0.3}>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
                 <Link
                   href="/products"
-                  className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-base shadow-xl shadow-amber-950/40 transition-all flex items-center gap-2 active:scale-95"
+                  className="group px-8 py-4 rounded-2xl bg-white text-black font-bold text-base shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_50px_rgba(255,255,255,0.3)] transition-shadow flex items-center gap-3"
                 >
                   View Products
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
+              </motion.div>
+
+              <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
                 <Link
                   href="/contact"
-                  className="px-7 py-3.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-100 font-semibold text-base border border-stone-700 transition-all active:scale-95"
+                  className="px-8 py-4 rounded-2xl bg-transparent border-2 border-white/20 text-white font-bold text-base hover:border-white/50 transition-colors"
                 >
                   Get a Quote
                 </Link>
+              </motion.div>
+
+              <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
                 <a
                   href="https://wa.me/917871457430?text=Hello%20Mahaveer%20Glass%20%26%20Plywood%20Hardware,%20I%20am%20interested%20in%20your%20products."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-base transition-all flex items-center gap-2 shadow-lg shadow-emerald-950/30"
+                  className="px-8 py-4 rounded-2xl bg-neutral-900 border border-neutral-800 text-white font-bold text-base hover:bg-neutral-800 transition-colors flex items-center gap-2"
                 >
-                  <MessageSquare className="w-5 h-5 fill-white text-emerald-600" />
+                  <MessageSquare className="w-5 h-5" />
                   WhatsApp Us
                 </a>
-              </div>
-
-              {/* Phone Quick Access */}
-              <div className="pt-4 border-t border-stone-850 flex flex-wrap justify-center lg:justify-start gap-4 text-xs text-stone-400">
-                <span className="flex items-center gap-1 font-semibold text-stone-300">
-                  <Phone className="w-3.5 h-3.5 text-amber-500" /> Store Hotline:
-                </span>
-                <a href="tel:7871457430" className="hover:text-amber-400">78714 57430</a>
-                <span>•</span>
-                <a href="tel:7845559880" className="hover:text-amber-400">78455 59880</a>
-                <span>•</span>
-                <a href="tel:9080457430" className="hover:text-amber-400">90804 57430</a>
-              </div>
+              </motion.div>
             </div>
+          </ScrollReveal>
 
-            {/* Hero Right Hardware Visual Card */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative rounded-2xl overflow-hidden border border-amber-900/30 shadow-2xl bg-stone-900">
-                <img
-                  src="https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=800&auto=format&fit=crop&q=80"
-                  alt="Mahaveer Glass and Hardware Store Display"
-                  className="w-full h-80 sm:h-96 object-cover filter contrast-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
-                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-stone-900/90 backdrop-blur-md border border-stone-700/60 shadow-lg">
-                  <p className="text-amber-400 text-xs font-bold uppercase tracking-wider">Chennai Store</p>
-                  <h4 className="text-stone-100 font-bold text-base mt-0.5">No. 21, Chetty Street, Old Pallavaram</h4>
-                  <p className="text-stone-300 text-xs mt-1">Complete stocks of Brass Keels, Aldrops, Mortise Locks & Marine Plywood</p>
-                </div>
-              </div>
+          {/* Phone */}
+          <ScrollReveal delay={0.4}>
+            <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm text-neutral-500">
+              <span className="flex items-center gap-2 font-semibold text-neutral-300">
+                <Phone className="w-4 h-4 text-white" /> Store Hotline:
+              </span>
+              <a href="tel:7871457430" className="hover:text-white transition-colors">78714 57430</a>
+              <span className="text-white/20">|</span>
+              <a href="tel:7845559880" className="hover:text-white transition-colors">78455 59880</a>
+              <span className="text-white/20">|</span>
+              <a href="tel:9080457430" className="hover:text-white transition-colors">90804 57430</a>
             </div>
+          </ScrollReveal>
 
+          {/* Scroll indicator */}
+          <motion.div
+            className="mt-16 flex flex-col items-center text-neutral-500 text-xs"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="mb-2">Scroll to explore</span>
+            <div className="w-5 h-8 border-2 border-white/20 rounded-full flex items-start justify-center p-1">
+              <motion.div
+                className="w-1.5 h-1.5 bg-white rounded-full"
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Marquee Banner */}
+      <Marquee />
+
+      {/* 2. STATS SECTION */}
+      <section className="py-20 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat, i) => {
+              const Icon = stat.icon;
+              return (
+                <ScrollReveal key={i} delay={i * 0.1}>
+                  <motion.div
+                    className="group relative p-8 rounded-3xl bg-neutral-900/30 border border-white/5 hover:border-white/20 transition-all duration-500 text-center overflow-hidden"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative z-10">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-white group-hover:border-white flex items-center justify-center mx-auto mb-4 transition-all duration-500">
+                        <Icon className="w-6 h-6 text-neutral-400 group-hover:text-black transition-colors duration-500" />
+                      </div>
+                      <div className="text-3xl sm:text-4xl font-black text-white mb-2">
+                        <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                      </div>
+                      <p className="text-xs text-neutral-500 uppercase tracking-widest font-semibold">{stat.label}</p>
+                    </div>
+                  </motion.div>
+                </ScrollReveal>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* 2. PRODUCT CATEGORIES SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-100 tracking-tight">
-            Explore Product Categories
-          </h2>
-          <p className="text-stone-400 text-sm sm:text-base">
-            From heavy door brass locks to high-pressure laminates and architectural toughened glass fittings.
-          </p>
-        </div>
+      {/* 3. PRODUCT CATEGORIES */}
+      <section className="py-24 bg-black relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+              <span className="text-xs text-neutral-500 uppercase tracking-[0.3em] font-bold">Our Range</span>
+              <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                Explore Product Categories
+              </h2>
+              <p className="text-neutral-400 text-base sm:text-lg leading-relaxed">
+                From heavy-duty brass door locks to premium laminates and toughened glass fittings.
+              </p>
+            </div>
+          </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {INITIAL_CATEGORIES.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/products?category=${encodeURIComponent(cat.name)}`}
-              className="group p-6 rounded-2xl bg-stone-900 hover:bg-stone-850 border border-stone-800 hover:border-amber-500/50 transition-all duration-300 shadow-lg flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-stone-800 group-hover:bg-amber-500/10 border border-stone-700 group-hover:border-amber-500/30 flex items-center justify-center text-amber-500 transition-colors">
-                  {cat.name.includes('Lock') ? <Lock className="w-6 h-6" /> :
-                   cat.name.includes('Plywood') || cat.name.includes('Laminates') ? <Layers className="w-6 h-6" /> :
-                   <DoorOpen className="w-6 h-6" />}
-                </div>
-                <h3 className="text-lg font-bold text-stone-100 group-hover:text-amber-400 transition-colors">
-                  {cat.name}
-                </h3>
-                <p className="text-xs text-stone-400 leading-relaxed">
-                  {cat.description}
-                </p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-stone-800 flex items-center text-xs font-semibold text-amber-500 group-hover:translate-x-1 transition-transform">
-                View Category Products <ChevronRight className="w-4 h-4 ml-1" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {INITIAL_CATEGORIES.map((cat, i) => (
+              <ScrollReveal key={cat.id} delay={i * 0.08}>
+                <motion.div whileHover={{ y: -8, scale: 1.02 }} transition={{ type: 'spring', stiffness: 300 }}>
+                  <Link
+                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                    className="group block p-7 rounded-3xl bg-neutral-900/30 backdrop-blur-sm border border-white/5 hover:border-white/30 transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,255,255,0.05)] relative overflow-hidden h-full"
+                  >
+                    {/* Animated corner glow */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-bl-full" />
 
-      {/* 3. CURRENT PRICE LIST SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PriceListTable />
-      </section>
-
-      {/* 4. WHY CHOOSE MAHAVEER SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-stone-900 via-stone-900 to-stone-850 rounded-3xl border border-stone-800 p-8 sm:p-12 shadow-2xl">
-          <div className="max-w-3xl space-y-4 mb-10">
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-stone-100">
-              Why Choose Mahaveer Glass & Plywood Hardware?
-            </h2>
-            <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-              We provide glass, plywood and hardware products for home, office, interior and construction-related requirements in Old Pallavaram, Chennai.
-            </p>
+                    <div className="space-y-5 relative z-10">
+                      <motion.div 
+                        className="w-14 h-14 rounded-2xl bg-black border border-white/10 group-hover:border-white group-hover:bg-white flex items-center justify-center text-neutral-400 group-hover:text-black transition-all duration-500 shadow-lg"
+                        whileHover={{ rotate: 5 }}
+                      >
+                        {cat.name.includes('Lock') ? <Lock className="w-7 h-7" /> :
+                         cat.name.includes('Plywood') || cat.name.includes('Laminates') ? <Layers className="w-7 h-7" /> :
+                         <DoorOpen className="w-7 h-7" />}
+                      </motion.div>
+                      <h3 className="text-xl font-bold text-neutral-200 group-hover:text-white transition-colors duration-300">
+                        {cat.name}
+                      </h3>
+                      <p className="text-sm text-neutral-500 group-hover:text-neutral-400 leading-relaxed transition-colors duration-300">
+                        {cat.description}
+                      </p>
+                    </div>
+                    <div className="mt-6 pt-5 border-t border-white/5 group-hover:border-white/20 flex items-center justify-between text-sm font-semibold text-neutral-500 group-hover:text-white transition-all duration-300 relative z-10">
+                      <span>Explore</span>
+                      <motion.div 
+                        className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-300"
+                        whileHover={{ x: 5 }}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </motion.div>
+                    </div>
+                  </Link>
+                </motion.div>
+              </ScrollReveal>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* Marquee 2 */}
+      <Marquee />
+
+      {/* 4. PRICE LIST */}
+      <section className="py-24 bg-black relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/[0.03] blur-[120px] rounded-full pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <ScrollReveal>
+            <PriceListTable />
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* 5. WHY CHOOSE US */}
+      <section className="py-24 bg-black relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+              <span className="text-xs text-neutral-500 uppercase tracking-[0.3em] font-bold">Why Us</span>
+              <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                Why Choose Mahaveer?
+              </h2>
+              <p className="text-neutral-400 text-base sm:text-lg">
+                Trusted by contractors, builders, and homeowners across Chennai.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="p-5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-2">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-lg">
-                1
-              </div>
-              <h3 className="text-stone-100 font-bold text-base">Wide Range of Hardware Products</h3>
-              <p className="text-xs text-stone-400 leading-relaxed">
-                Stocking S.S & Brass keels, tower bolts, aldrops, rim locks, mortise locks, door stoppers, and magnetic catchers under one roof.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-2">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-lg">
-                2
-              </div>
-              <h3 className="text-stone-100 font-bold text-base">Convenient Local Location</h3>
-              <p className="text-xs text-stone-400 leading-relaxed">
-                Situated at No. 21, Chetty Street, Old Pallavaram, easily accessible for local contractors, carpenters, home owners and builders.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-2">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-lg">
-                3
-              </div>
-              <h3 className="text-stone-100 font-bold text-base">Product Enquiry Support</h3>
-              <p className="text-xs text-stone-400 leading-relaxed">
-                Direct phone and WhatsApp assistance to verify product specifications, exact dimensions, finish variants and current prices.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-2">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-lg">
-                4
-              </div>
-              <h3 className="text-stone-100 font-bold text-base">Multiple Product Categories</h3>
-              <p className="text-xs text-stone-400 leading-relaxed">
-                Solutions covering marine plywood, decorative high pressure laminates, toughened architectural glass, and modular kitchen hardware.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-2">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold text-lg">
-                5
-              </div>
-              <h3 className="text-stone-100 font-bold text-base">Direct Customer Assistance</h3>
-              <p className="text-xs text-stone-400 leading-relaxed">
-                Personalized service to help you select the exact hardware grade, mortise lock sizes (7", 8", 10"), and finish variants (Antique / S.S / Brass).
-              </p>
-            </div>
+            {[
+              { icon: ShieldCheck, title: 'Wide Range of Hardware', desc: 'S.S & Brass keels, tower bolts, aldrops, rim locks, mortise locks, and magnetic catchers under one roof.' },
+              { icon: MapPin, title: 'Prime Location', desc: 'No. 21, Chetty Street, Old Pallavaram \u2014 easy access for contractors, carpenters, and builders.' },
+              { icon: Phone, title: 'Direct Assistance', desc: 'WhatsApp and phone support to verify specs, dimensions, finish variants and current prices instantly.' },
+              { icon: Zap, title: 'Quality Products', desc: 'We stock only industry-grade products from trusted manufacturers for long-lasting durability.' },
+              { icon: Clock, title: 'Quick Service', desc: 'Walk-in or call ahead \u2014 we get your order ready quickly so you can get back to your project.' },
+              { icon: Star, title: 'Customer Focused', desc: 'Personalized advice on hardware grade, lock sizes, and finish variants (Antique / S.S / Brass).' },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <ScrollReveal key={i} delay={i * 0.08}>
+                  <motion.div
+                    className="group relative p-8 rounded-3xl bg-neutral-900/20 border border-white/5 hover:border-white/20 transition-all duration-500 overflow-hidden"
+                    whileHover={{ y: -5 }}
+                  >
+                    <motion.div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                      style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(255,255,255,0.02) 100%)' }}
+                    />
+                    
+                    <div className="relative z-10">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-white group-hover:border-white flex items-center justify-center mb-6 transition-all duration-500">
+                        <Icon className="w-6 h-6 text-neutral-400 group-hover:text-black transition-colors duration-500" />
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-3">{item.title}</h3>
+                      <p className="text-sm text-neutral-500 group-hover:text-neutral-400 leading-relaxed transition-colors">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                </ScrollReveal>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* 5. LOCATION & CONTACT CTA BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-800 text-stone-950 shadow-2xl flex flex-col lg:flex-row justify-between items-center gap-8">
-          <div className="space-y-3 text-center lg:text-left">
-            <h2 className="text-2xl sm:text-4xl font-extrabold">
-              Visit Our Store or Send an Enquiry
-            </h2>
-            <p className="text-stone-900 text-sm sm:text-base font-medium max-w-xl">
-              No. 21, Chetty Street, Old Pallavaram, Chennai - 600 117. Call us directly for bulk contractor quotes and custom requirements.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-4 shrink-0 justify-center">
-            <a
-              href="tel:7871457430"
-              className="px-6 py-3 rounded-xl bg-stone-950 text-stone-100 font-bold text-sm hover:bg-stone-900 transition-colors shadow-lg flex items-center gap-2"
+      {/* 6. STORE CTA */}
+      <section className="py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <motion.div 
+              className="relative p-12 sm:p-16 rounded-[2rem] border border-white/10 overflow-hidden group"
+              whileHover={{ borderColor: 'rgba(255,255,255,0.2)' }}
             >
-              <Phone className="w-4 h-4 text-amber-400" />
-              Call 78714 57430
-            </a>
-            <Link
-              href="/contact"
-              className="px-6 py-3 rounded-xl bg-amber-200 text-stone-950 font-bold text-sm hover:bg-white transition-colors shadow-md"
-            >
-              Get Store Directions
-            </Link>
-          </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-neutral-900 via-neutral-900/80 to-black" />
+              <motion.div 
+                className="absolute inset-0 opacity-20"
+                animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
+                transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
+                style={{
+                  backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.05) 0%, transparent 50%)',
+                  backgroundSize: '200% 200%'
+                }}
+              />
+
+              <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-10">
+                <div className="space-y-4 text-center lg:text-left max-w-2xl">
+                  <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+                    Visit Our Store
+                  </h2>
+                  <p className="text-neutral-400 text-base sm:text-lg">
+                    No. 21, Chetty Street, Old Pallavaram, Chennai - 600 117. Get the best prices on hardware, glass, and plywood.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+                  <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
+                    <a
+                      href="tel:7871457430"
+                      className="px-8 py-4 rounded-2xl bg-black border-2 border-white/20 text-white font-bold text-sm hover:border-white/50 transition-all flex items-center gap-2"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Call 78714 57430
+                    </a>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
+                    <Link
+                      href="/contact"
+                      className="px-8 py-4 rounded-2xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+                    >
+                      Get Directions \u2192
+                    </Link>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          </ScrollReveal>
         </div>
       </section>
     </div>

@@ -88,11 +88,12 @@ function ProductCatalogContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       {/* Page Title Header */}
-      <div className="border-b border-stone-800 pb-6 space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-100 tracking-tight">
+      <div className="border-b border-white/10 pb-6 space-y-2 relative">
+        <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 blur-[50px] rounded-full pointer-events-none"></div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight relative z-10">
           Glass, Plywood & Hardware Catalog
         </h1>
-        <p className="text-stone-400 text-sm sm:text-base">
+        <p className="text-neutral-400 text-sm sm:text-base relative z-10">
           Browse our complete range of door locks, tower bolts, keels, aldrops, marine plywood and glass hardware.
         </p>
       </div>
@@ -100,24 +101,24 @@ function ProductCatalogContent() {
       {/* Search Bar & Controls */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Search Field */}
-        <div className="md:col-span-8 relative">
-          <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+        <div className="md:col-span-8 relative group">
+          <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-white transition-colors" />
           <input
             type="text"
             placeholder="Search by product name, e.g., Mortise Lock, Brass Aldrop, Keel..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-stone-900 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500 text-sm"
+            className="w-full pl-11 pr-4 py-3 bg-neutral-900 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 text-sm transition-all shadow-inner"
           />
         </div>
 
         {/* Sorting Dropdown */}
         <div className="md:col-span-4 flex items-center gap-2">
-          <label className="text-xs text-stone-400 whitespace-nowrap font-medium">Sort By:</label>
+          <label className="text-xs text-neutral-400 whitespace-nowrap font-medium">Sort By:</label>
           <select
             value={sortBy}
             onChange={(e: any) => setSortBy(e.target.value)}
-            className="w-full py-3 px-3 bg-stone-900 border border-stone-800 rounded-xl text-stone-100 text-sm focus:outline-none focus:border-amber-500"
+            className="w-full py-3 px-3 bg-neutral-900 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all shadow-inner"
           >
             <option value="default">Featured / Default</option>
             <option value="price-low">Price: Low to High</option>
@@ -131,10 +132,10 @@ function ProductCatalogContent() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => setSelectedCategory('All')}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors border ${
+          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-300 border ${
             selectedCategory === 'All'
-              ? 'bg-amber-500 text-stone-950 border-amber-500'
-              : 'bg-stone-900 text-stone-300 border-stone-800 hover:border-stone-700'
+              ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+              : 'bg-black text-neutral-400 border-white/10 hover:border-white/30 hover:text-white'
           }`}
         >
           All Products ({products.length})
@@ -143,10 +144,10 @@ function ProductCatalogContent() {
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.name)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors border ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-300 border ${
               selectedCategory.toLowerCase() === cat.name.toLowerCase()
-                ? 'bg-amber-500 text-stone-950 border-amber-500'
-                : 'bg-stone-900 text-stone-300 border-stone-800 hover:border-stone-700'
+                ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                : 'bg-black text-neutral-400 border-white/10 hover:border-white/30 hover:text-white'
             }`}
           >
             {cat.name}
@@ -157,17 +158,17 @@ function ProductCatalogContent() {
       {/* Loading State */}
       {loading && (
         <div className="text-center py-16 space-y-3">
-          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-stone-400 text-sm">Loading products...</p>
+          <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+          <p className="text-neutral-400 text-sm animate-pulse">Loading products...</p>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && filteredProducts.length === 0 && (
-        <div className="text-center py-16 bg-stone-900/60 rounded-2xl border border-stone-800 p-8 space-y-3">
-          <Layers className="w-12 h-12 text-stone-600 mx-auto" />
-          <h3 className="text-stone-200 font-bold text-lg">No products available.</h3>
-          <p className="text-stone-400 text-sm max-w-md mx-auto">
+        <div className="text-center py-16 bg-neutral-900/40 backdrop-blur-sm rounded-2xl border border-white/5 p-8 space-y-3 shadow-inner">
+          <Layers className="w-12 h-12 text-neutral-600 mx-auto" />
+          <h3 className="text-white font-bold text-lg">No products available.</h3>
+          <p className="text-neutral-400 text-sm max-w-md mx-auto">
             No products match your current search or category filter. Try clearing your search query or choosing another category.
           </p>
           <button
@@ -175,7 +176,7 @@ function ProductCatalogContent() {
               setSearchQuery('');
               setSelectedCategory('All');
             }}
-            className="mt-2 px-4 py-2 bg-stone-800 hover:bg-stone-700 text-amber-400 text-xs font-semibold rounded-lg"
+            className="mt-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded-lg border border-white/10 transition-colors"
           >
             Reset Filters
           </button>
@@ -194,21 +195,25 @@ function ProductCatalogContent() {
             return (
               <div
                 key={product.id || product._id}
-                className="group bg-stone-900 rounded-2xl border border-stone-800 hover:border-amber-500/50 transition-all duration-300 shadow-xl overflow-hidden flex flex-col justify-between"
+                className="group bg-neutral-900/40 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-white/30 transition-all duration-500 shadow-lg hover:shadow-[0_0_25px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col justify-between hover:-translate-y-1 relative"
               >
-                <div>
+                {/* Hover gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
+                
+                <div className="relative z-10">
                   {/* Product Image */}
-                  <div className="relative h-48 sm:h-52 bg-stone-950 overflow-hidden">
+                  <div className="relative h-48 sm:h-52 bg-black overflow-hidden border-b border-white/5">
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
                     />
-                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-stone-950/80 backdrop-blur-md rounded-md border border-stone-800 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500"></div>
+                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/80 backdrop-blur-md rounded-md border border-white/20 text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">
                       {product.category}
                     </div>
                     {product.availability && (
-                      <div className="absolute top-3 right-3 px-2 py-0.5 bg-emerald-950/90 border border-emerald-700/60 rounded text-[10px] font-bold text-emerald-400">
+                      <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/90 border border-neutral-700 rounded text-[10px] font-bold text-neutral-300">
                         {product.availability}
                       </div>
                     )}
@@ -217,24 +222,24 @@ function ProductCatalogContent() {
                   {/* Product Information */}
                   <div className="p-5 space-y-3">
                     <Link href={`/products/${product.id || product._id}`}>
-                      <h3 className="text-base font-bold text-stone-100 group-hover:text-amber-400 transition-colors line-clamp-1">
+                      <h3 className="text-base font-bold text-white group-hover:text-neutral-300 transition-colors line-clamp-1">
                         {product.name}
                       </h3>
                     </Link>
 
                     {product.typeVariant && (
-                      <p className="text-xs text-amber-500/90 font-medium">
+                      <p className="text-xs text-neutral-400 font-medium">
                         Variant: {product.typeVariant}
                       </p>
                     )}
 
-                    <p className="text-xs text-stone-400 leading-relaxed line-clamp-2">
+                    <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2">
                       {product.shortDescription}
                     </p>
 
-                    <div className="pt-2 border-t border-stone-850 flex items-baseline justify-between">
-                      <span className="text-xs text-stone-500">Price</span>
-                      <span className="text-lg font-extrabold text-amber-400">
+                    <div className="pt-2 border-t border-white/5 flex items-baseline justify-between">
+                      <span className="text-xs text-neutral-500">Price</span>
+                      <span className="text-lg font-extrabold text-white">
                         {product.priceDisplay || `₹${product.price.toLocaleString('en-IN')}`}
                       </span>
                     </div>
@@ -242,10 +247,10 @@ function ProductCatalogContent() {
                 </div>
 
                 {/* Card Actions */}
-                <div className="p-5 pt-0 space-y-2">
+                <div className="p-5 pt-0 space-y-2 relative z-10">
                   <Link
                     href={`/products/${product.id || product._id}`}
-                    className="w-full py-2.5 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-200 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 border border-stone-700"
+                    className="w-full py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 border border-white/10 hover:border-white/30"
                   >
                     View Specifications & Details
                   </Link>
@@ -253,7 +258,7 @@ function ProductCatalogContent() {
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       href={`/contact?product=${encodeURIComponent(product.name)}`}
-                      className="py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-colors text-center shadow-md"
+                      className="py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs transition-colors text-center shadow-[0_0_10px_rgba(255,255,255,0.1)] hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                     >
                       Enquire Now
                     </Link>
@@ -261,9 +266,9 @@ function ProductCatalogContent() {
                       href={whatsappLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors text-center flex items-center justify-center gap-1 shadow-md"
+                      className="py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white font-bold text-xs transition-colors text-center flex items-center justify-center gap-1"
                     >
-                      <MessageSquare className="w-3.5 h-3.5 fill-white text-emerald-600" />
+                      <MessageSquare className="w-3.5 h-3.5 text-white" />
                       WhatsApp
                     </a>
                   </div>

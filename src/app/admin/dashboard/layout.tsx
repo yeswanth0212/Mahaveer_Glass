@@ -46,9 +46,9 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center space-y-3 text-stone-300">
-        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm">Verifying Admin Permissions...</p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-3 text-neutral-400">
+        <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(255,255,255,0.3)]"></div>
+        <p className="text-sm animate-pulse">Verifying Admin Permissions...</p>
       </div>
     );
   }
@@ -64,18 +64,18 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
   ];
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row font-sans">
       
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-stone-900 border-r border-stone-800 shrink-0">
+      <aside className="hidden md:flex flex-col w-64 bg-black border-r border-white/10 shrink-0">
         {/* Brand */}
-        <div className="p-6 border-b border-stone-800 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-amber-500 text-stone-950 font-extrabold flex items-center justify-center">
+        <div className="p-6 border-b border-white/10 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-white text-black font-extrabold flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.2)]">
             M
           </div>
           <div>
-            <h2 className="font-extrabold text-sm text-stone-100 leading-tight">MAHAVEER</h2>
-            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider">Admin Control Panel</p>
+            <h2 className="font-extrabold text-sm text-white leading-tight">MAHAVEER</h2>
+            <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Admin Control Panel</p>
           </div>
         </div>
 
@@ -88,10 +88,10 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   isActive
-                    ? 'bg-amber-500 text-stone-950'
-                    : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100'
+                    ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                    : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -102,11 +102,11 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-stone-800 space-y-2">
+        <div className="p-4 border-t border-white/10 space-y-2">
           <Link
             href="/"
             target="_blank"
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-stone-950 text-stone-400 hover:text-stone-200 text-xs font-semibold border border-stone-800 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 text-xs font-semibold border border-white/10 transition-colors"
           >
             <span>View Public Store</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-rose-400 hover:bg-rose-950/40 text-xs font-bold transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 text-xs font-bold transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out</span>
@@ -123,16 +123,16 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
       </aside>
 
       {/* Mobile Top Navbar */}
-      <div className="md:hidden bg-stone-900 border-b border-stone-800 p-4 flex items-center justify-between sticky top-0 z-30">
+      <div className="md:hidden bg-black border-b border-white/10 p-4 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 text-stone-950 font-bold flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-white text-black font-bold flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.2)]">
             M
           </div>
           <span className="font-extrabold text-sm">Mahaveer Admin</span>
         </div>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-lg text-stone-300 hover:bg-stone-800"
+          className="p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-900"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -140,7 +140,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-stone-900 border-b border-stone-800 p-4 space-y-2 z-30">
+        <div className="md:hidden bg-black border-b border-white/10 p-4 space-y-2 z-30">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -149,8 +149,8 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold ${
-                  isActive ? 'bg-amber-500 text-stone-950' : 'text-stone-300'
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  isActive ? 'bg-white text-black shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'text-neutral-400 hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -158,11 +158,11 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               </Link>
             );
           })}
-          <div className="pt-2 border-t border-stone-800 flex justify-between items-center">
-            <Link href="/" target="_blank" className="text-xs text-amber-400 font-bold">
+          <div className="pt-2 border-t border-white/10 flex justify-between items-center px-4">
+            <Link href="/" target="_blank" className="text-xs text-white font-bold hover:underline">
               View Public Website
             </Link>
-            <button onClick={handleLogout} className="text-xs text-rose-400 font-bold">
+            <button onClick={handleLogout} className="text-xs text-red-400 font-bold hover:text-red-300">
               Logout
             </button>
           </div>

@@ -9,9 +9,9 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-black text-white border-b border-white/10 shadow-md">
+    <header className="sticky top-0 z-40 bg-black/70 backdrop-blur-xl text-white border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300">
       {/* Top Notification / Quick Contact Bar */}
-      <div className="bg-neutral-950 px-4 py-2 border-b border-white/5 text-xs text-neutral-400">
+      <div className="bg-black/50 px-4 py-2 border-b border-white/5 text-xs text-neutral-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -29,9 +29,9 @@ export default function Header() {
               href="https://wa.me/917871457430?text=Hello%20Mahaveer%20Glass%20%26%20Plywood%20Hardware,%20I%20have%20an%20enquiry" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-medium"
+              className="text-white hover:text-neutral-300 flex items-center gap-1 font-medium transition-colors"
             >
-              <MessageSquare className="w-3.5 h-3.5 fill-emerald-400 text-black" />
+              <MessageSquare className="w-3.5 h-3.5 fill-white text-black" />
               <span>WhatsApp</span>
             </a>
           </div>
@@ -62,19 +62,19 @@ export default function Header() {
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-stone-300 hover:text-amber-400 font-medium transition-colors text-sm">
+            <Link href="/" className="text-neutral-400 hover:text-white font-medium transition-all duration-300 text-sm hover:-translate-y-0.5">
               Home
             </Link>
-            <Link href="/products" className="text-stone-300 hover:text-amber-400 font-medium transition-colors text-sm">
+            <Link href="/products" className="text-neutral-400 hover:text-white font-medium transition-all duration-300 text-sm hover:-translate-y-0.5">
               Products
             </Link>
-            <Link href="/about" className="text-stone-300 hover:text-amber-400 font-medium transition-colors text-sm">
+            <Link href="/about" className="text-neutral-400 hover:text-white font-medium transition-all duration-300 text-sm hover:-translate-y-0.5">
               About Us
             </Link>
-            <Link href="/gallery" className="text-stone-300 hover:text-amber-400 font-medium transition-colors text-sm">
+            <Link href="/gallery" className="text-neutral-400 hover:text-white font-medium transition-all duration-300 text-sm hover:-translate-y-0.5">
               Gallery
             </Link>
-            <Link href="/contact" className="text-stone-300 hover:text-amber-400 font-medium transition-colors text-sm">
+            <Link href="/contact" className="text-neutral-400 hover:text-white font-medium transition-all duration-300 text-sm hover:-translate-y-0.5">
               Contact
             </Link>
           </nav>
@@ -83,7 +83,7 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-3">
             <Link 
               href="/contact" 
-              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-semibold text-sm hover:from-amber-400 hover:to-amber-500 transition-all shadow-md shadow-amber-900/20 active:scale-95"
+              className="px-5 py-2.5 rounded-lg bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] active:scale-95 hover:-translate-y-0.5"
             >
               Get Quote
             </Link>
@@ -92,7 +92,7 @@ export default function Header() {
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-lg text-stone-300 hover:text-amber-400 hover:bg-stone-800 focus:outline-none"
+            className="md:hidden p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-white/10 focus:outline-none transition-colors"
             aria-label="Toggle Navigation Menu"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -102,39 +102,39 @@ export default function Header() {
 
       {/* Mobile Menu Drawer */}
       {isOpen && (
-        <div className="md:hidden bg-stone-900 border-b border-stone-800 px-4 pt-2 pb-6 space-y-3">
+        <div className="md:hidden bg-black/95 backdrop-blur-md border-b border-white/10 px-4 pt-2 pb-6 space-y-3">
           <Link
             href="/"
             onClick={() => setIsOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-amber-400 hover:bg-stone-800"
+            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             Home
           </Link>
           <Link
             href="/products"
             onClick={() => setIsOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-amber-400 hover:bg-stone-800"
+            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             Products
           </Link>
           <Link
             href="/about"
             onClick={() => setIsOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-amber-400 hover:bg-stone-800"
+            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             About Us
           </Link>
           <Link
             href="/gallery"
             onClick={() => setIsOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-amber-400 hover:bg-stone-800"
+            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             Gallery
           </Link>
           <Link
             href="/contact"
             onClick={() => setIsOpen(false)}
-            className="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-amber-400 hover:bg-stone-800"
+            className="block px-3 py-2 rounded-md text-base font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             Contact
           </Link>
@@ -142,7 +142,7 @@ export default function Header() {
             <Link
               href="/contact"
               onClick={() => setIsOpen(false)}
-              className="block text-center w-full py-3 rounded-lg bg-amber-500 text-stone-950 font-bold text-base shadow-md"
+              className="block text-center w-full py-3 rounded-lg bg-white text-black font-bold text-base shadow-[0_0_15px_rgba(255,255,255,0.2)]"
             >
               Get Quote
             </Link>

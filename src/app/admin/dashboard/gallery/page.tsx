@@ -41,31 +41,28 @@ export default function AdminGalleryPage() {
     if (!file) return;
 
     setUploadingImage(true);
-    setUploadProgress(0);
+    setUploadProgress(50);
     setErrorMsg('');
 
     try {
-      const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      const data = new FormData();
+      data.append('file', file);
 
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(progress);
-        },
-        (error) => {
-          setErrorMsg('Failed to upload image: ' + error.message);
-          setUploadingImage(false);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          setImageUrl(downloadURL);
-          setUploadingImage(false);
-        }
-      );
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: data,
+      });
+
+      const json = await res.json();
+      if (res.ok && json.imageUrl) {
+        setUploadProgress(100);
+        setImageUrl(json.imageUrl);
+      } else {
+        setErrorMsg(json.error || 'Failed to upload image');
+      }
     } catch (err: any) {
       setErrorMsg('Failed to upload image: ' + err.message);
+    } finally {
       setUploadingImage(false);
     }
   };
