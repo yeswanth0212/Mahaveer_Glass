@@ -13,16 +13,15 @@ function ProductCatalogContent() {
   const initialCategoryParam = searchParams.get('category') || 'All';
   const initialSearchParam = searchParams.get('search') || '';
 
-  const [products, setProducts] = useState<IProduct[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>(INITIAL_CATEGORIES);
   const [searchQuery, setSearchQuery] = useState(initialSearchParam);
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam);
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'name'>('default');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true);
       try {
         const [resProd, resCat] = await Promise.all([
           fetch('/api/products'),
@@ -32,7 +31,11 @@ function ProductCatalogContent() {
           const prodData = await resProd.json();
           if (Array.isArray(prodData) && prodData.length > 0) {
             setProducts(prodData);
+          } else {
+            setProducts(INITIAL_PRODUCTS);
           }
+        } else {
+          setProducts(INITIAL_PRODUCTS);
         }
         if (resCat.ok) {
           const catData = await resCat.json();
@@ -42,6 +45,7 @@ function ProductCatalogContent() {
         }
       } catch (err) {
         console.error('Error loading catalog data:', err);
+        setProducts(INITIAL_PRODUCTS);
       } finally {
         setLoading(false);
       }

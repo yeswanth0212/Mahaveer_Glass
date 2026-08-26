@@ -55,49 +55,52 @@ function docToProduct(docSnap: any): IProduct {
 // ---------------- PRODUCTS ----------------
 export async function getProductsFromFirestore(): Promise<IProduct[]> {
   const now = Date.now();
-  if (cachedProducts && (now - lastProductsFetch < 60000)) {
+  if (cachedProducts && cachedProducts.length > 0 && (now - lastProductsFetch < 5000)) {
     return cachedProducts;
   }
 
   try {
-    const fetchPromise = async () => {
-      const colRef = collection(db, 'products');
-      const snap = await getDocs(colRef);
-      if (snap.empty) {
-        await seedFirestoreProducts();
-        const newSnap = await getDocs(colRef);
-        return newSnap.docs.map(docToProduct);
-      }
-      return snap.docs.map(docToProduct);
-    };
+    const colRef = collection(db, 'products');
+    const snap = await withTimeout(getDocs(colRef), 8000, null);
+    
+    if (snap && !snap.empty) {
+      const items = snap.docs.map(docToProduct);
+      cachedProducts = items;
+      lastProductsFetch = now;
+      return items;
+    }
 
-    const result = await withTimeout(fetchPromise(), 1500, cachedProducts || INITIAL_PRODUCTS);
-    cachedProducts = result;
-    lastProductsFetch = now;
-    return result;
+    if (snap && snap.empty) {
+      await seedFirestoreProducts();
+      const newSnap = await getDocs(colRef);
+      const items = newSnap.docs.map(docToProduct);
+      cachedProducts = items;
+      lastProductsFetch = now;
+      return items;
+    }
+
+    return cachedProducts || INITIAL_PRODUCTS;
   } catch (error) {
-    console.warn('Firestore getProducts warning, returning initial dataset:', error);
+    console.warn('Firestore getProducts warning:', error);
     return cachedProducts || INITIAL_PRODUCTS;
   }
 }
 
 export async function getProductByIdFromFirestore(id: string): Promise<IProduct | null> {
-  if (cachedProducts) {
+  if (cachedProducts && cachedProducts.length > 0) {
     const foundInCache = cachedProducts.find(p => p.id === id || p._id === id);
     if (foundInCache) return foundInCache;
   }
 
   try {
-    const fetchPromise = async () => {
-      const docRef = doc(db, 'products', id);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        return docToProduct(snap);
-      }
-      return INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
-    };
+    const docRef = doc(db, 'products', id);
+    const snap = await withTimeout(getDoc(docRef), 8000, null);
+    if (snap && snap.exists()) {
+      return docToProduct(snap);
+    }
 
-    return await withTimeout(fetchPromise(), 1500, INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null);
+    // Try finding by id or _id in initial products fallback
+    return INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
   } catch (error) {
     return INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
   }
