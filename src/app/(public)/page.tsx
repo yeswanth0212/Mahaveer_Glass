@@ -224,7 +224,8 @@ export default function HomePage() {
                 key={product.id || product._id}
                 className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
               >
-                <div>
+                {/* Clickable Card Area */}
+                <Link href={`/products/${product.id || product._id}`} className="block cursor-pointer">
                   {/* Product Image Box with Rating Badge */}
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">
                     <img
@@ -248,11 +249,9 @@ export default function HomePage() {
                   </div>
 
                   {/* Product Title */}
-                  <Link href={`/products`}>
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">
-                      {product.name}
-                    </h3>
-                  </Link>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+                    {product.name}
+                  </h3>
 
                   {/* Variant Tag */}
                   {product.typeVariant && (
@@ -275,7 +274,7 @@ export default function HomePage() {
                       Buy at ₹{product.price.toLocaleString('en-IN')}
                     </p>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card Action Button */}
                 <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1.5">

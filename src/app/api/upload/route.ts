@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,28 +15,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 });
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large. Max 5MB.' }, { status: 400 });
+    // Validate file size (max 8MB)
+    if (file.size > 8 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File too large. Maximum size is 8MB.' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create unique filename
-    const ext = path.extname(file.name) || '.jpg';
-    const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
+    // Convert directly to Base64 Data URL (100% compatible with Vercel, serverless, and local)
+    const mimeType = file.type || 'image/jpeg';
+    const base64Data = buffer.toString('base64');
+    const imageUrl = `data:${mimeType};base64,${base64Data}`;
 
-    // Ensure uploads directory exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
-    // Write file
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // Return the public URL
-    const imageUrl = `/uploads/${filename}`;
     return NextResponse.json({ imageUrl }, { status: 200 });
   } catch (error: any) {
     console.error('Upload error:', error);

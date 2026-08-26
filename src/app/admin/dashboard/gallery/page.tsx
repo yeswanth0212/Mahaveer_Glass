@@ -36,32 +36,59 @@ export default function AdminGalleryPage() {
     fetchGallery();
   }, []);
 
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = document.createElement('img');
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingImage(true);
-    setUploadProgress(50);
+    setUploadProgress(40);
     setErrorMsg('');
 
     try {
-      const data = new FormData();
-      data.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      const json = await res.json();
-      if (res.ok && json.imageUrl) {
-        setUploadProgress(100);
-        setImageUrl(json.imageUrl);
-      } else {
-        setErrorMsg(json.error || 'Failed to upload image');
-      }
+      const compressedDataUrl = await compressImage(file);
+      setUploadProgress(100);
+      setImageUrl(compressedDataUrl);
     } catch (err: any) {
-      setErrorMsg('Failed to upload image: ' + err.message);
+      setErrorMsg('Failed to process image: ' + err.message);
     } finally {
       setUploadingImage(false);
     }

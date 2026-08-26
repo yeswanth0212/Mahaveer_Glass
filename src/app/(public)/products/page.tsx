@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers, Star, Sparkles } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers, Star, X, Sparkles } from 'lucide-react';
 import { IProduct, ICategory } from '@/lib/types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '@/lib/seedData';
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialCategoryParam = searchParams.get('category') || 'All';
   const initialSearchParam = searchParams.get('search') || '';
 
@@ -52,10 +53,15 @@ function ProductCatalogContent() {
     if (searchParams.get('category')) {
       setSelectedCategory(searchParams.get('category') || 'All');
     }
-    if (searchParams.get('search')) {
+    if (searchParams.get('search') !== null) {
       setSearchQuery(searchParams.get('search') || '');
     }
   }, [searchParams]);
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    router.push('/products');
+  };
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -91,52 +97,53 @@ function ProductCatalogContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       
-      {/* Header Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Header Banner & Sort Control (Single Clean Header without duplicate search bar) */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
             Hardware & Glass Product Catalog
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Browse our complete range of door locks, tower bolts, keels, aldrops, marine plywood and glass hardware.
+            Browse door locks, tower bolts, keels, aldrops, marine plywood and architectural fittings.
           </p>
         </div>
-        <div className="px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shrink-0">
-          {filteredProducts.length} Items Available
+
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          <div className="px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shrink-0">
+            {filteredProducts.length} Items Available
+          </div>
+
+          {/* Sort By Dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 font-bold whitespace-nowrap">Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e: any) => setSortBy(e.target.value)}
+              className="py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-semibold focus:outline-none focus:border-blue-500 shadow-sm"
+            >
+              <option value="default">Featured / Best Sellers</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name: A to Z</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Search Bar & Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Search Field */}
-        <div className="md:col-span-8 relative">
-          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-blue-600" />
-          <input
-            type="text"
-            placeholder="Search by product name, e.g. Mortise Lock, Brass Aldrop, Keel..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-blue-500/60 focus:border-blue-600 rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 text-xs sm:text-sm shadow-sm transition-all"
-          />
-        </div>
-
-        {/* Sorting Dropdown */}
-        <div className="md:col-span-4 flex items-center gap-2">
-          <label className="text-xs text-slate-500 whitespace-nowrap font-bold">Sort By:</label>
-          <select
-            value={sortBy}
-            onChange={(e: any) => setSortBy(e.target.value)}
-            className="w-full py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs sm:text-sm font-medium focus:outline-none focus:border-blue-500 shadow-sm"
+      {/* Active Search Query Pill (if user searched from Header) */}
+      {searchQuery && (
+        <div className="flex items-center gap-2 bg-blue-50/80 border border-blue-200 px-4 py-2 rounded-2xl">
+          <span className="text-xs text-slate-600">Showing results for: <strong className="text-blue-700 font-bold">"{searchQuery}"</strong></span>
+          <button
+            onClick={clearSearch}
+            className="p-1 hover:bg-blue-200/60 rounded-full text-blue-700 text-xs flex items-center gap-1 transition-colors font-bold ml-auto"
           >
-            <option value="default">Featured / Best Sellers</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name">Name: A to Z</option>
-          </select>
+            <X className="w-3.5 h-3.5" /> Clear Search
+          </button>
         </div>
-      </div>
+      )}
 
-      {/* Category Filter Chips */}
+      {/* Category Filter Chips Slider */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => setSelectedCategory('All')}
@@ -173,25 +180,25 @@ function ProductCatalogContent() {
 
       {/* Empty State */}
       {!loading && filteredProducts.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8 space-y-3 shadow-sm">
+        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 space-y-3 shadow-sm">
           <Layers className="w-12 h-12 text-slate-400 mx-auto" />
           <h3 className="text-slate-800 font-bold text-lg">No products found</h3>
           <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto">
-            No products match your current search or category filter. Try clearing your search query or choosing another category.
+            No products match your current filter. Try resetting search or selecting another category.
           </p>
           <button
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('All');
             }}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors shadow-sm"
+            className="mt-2 px-5 py-2 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-colors shadow-sm"
           >
             Reset Filters
           </button>
         </div>
       )}
 
-      {/* Products Grid (Clean Flipkart Style) */}
+      {/* Products Grid - ENTIRE PRODUCT CARD IS CLICKABLE */}
       {!loading && filteredProducts.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {filteredProducts.map((product) => {
@@ -200,13 +207,15 @@ function ProductCatalogContent() {
               `Hello Mahaveer Glass & Plywood Hardware, I am interested in ${product.name}. Please confirm price and availability.`
             );
             const whatsappLink = `https://wa.me/917871457430?text=${encodedMsg}`;
+            const detailUrl = `/products/${product.id || product._id}`;
 
             return (
               <div
                 key={product.id || product._id}
                 className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
               >
-                <div>
+                {/* Clickable Card Link for Entire Product Area */}
+                <Link href={detailUrl} className="block cursor-pointer">
                   {/* Product Image */}
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">
                     <img
@@ -235,11 +244,9 @@ function ProductCatalogContent() {
                   </div>
 
                   {/* Product Title */}
-                  <Link href={`/products/${product.id || product._id}`}>
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2">
-                      {product.name}
-                    </h3>
-                  </Link>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {product.name}
+                  </h3>
 
                   {/* Variant Tag */}
                   {product.typeVariant && (
@@ -262,12 +269,12 @@ function ProductCatalogContent() {
                       Buy at ₹{product.price.toLocaleString('en-IN')}
                     </p>
                   </div>
-                </div>
+                </Link>
 
-                {/* Card Action Buttons */}
+                {/* Action Buttons */}
                 <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1.5">
                   <Link
-                    href={`/contact?product=${encodeURIComponent(product.name)}`}
+                    href={detailUrl}
                     className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] transition-colors text-center"
                   >
                     Details
