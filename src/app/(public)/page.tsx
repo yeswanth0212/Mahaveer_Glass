@@ -23,11 +23,12 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import PriceListTable from '@/components/PriceListTable';
-import { INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '@/lib/seedData';
+import { INITIAL_CATEGORIES } from '@/lib/seedData';
 import { IProduct } from '@/lib/types';
+import { getClientProducts, setClientProducts } from '@/lib/clientProductStore';
 
 export default function HomePage() {
-  const [products, setProducts] = useState<IProduct[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<IProduct[]>(getClientProducts());
 
   useEffect(() => {
     async function loadProducts() {
@@ -37,6 +38,7 @@ export default function HomePage() {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
             setProducts(data);
+            setClientProducts(data);
           }
         }
       } catch (err) {

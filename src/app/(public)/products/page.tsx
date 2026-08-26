@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers, Star, X, Sparkles } from 'lucide-react';
 import { IProduct, ICategory } from '@/lib/types';
-import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '@/lib/seedData';
+import { getClientProducts, setClientProducts, getClientCategories, setClientCategories } from '@/lib/clientProductStore';
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
@@ -13,12 +13,16 @@ function ProductCatalogContent() {
   const initialCategoryParam = searchParams.get('category') || 'All';
   const initialSearchParam = searchParams.get('search') || '';
 
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [categories, setCategories] = useState<ICategory[]>(INITIAL_CATEGORIES);
+  // Synchronous 0ms retrieval from instant client cache
+  const cachedProducts = getClientProducts();
+  const cachedCategories = getClientCategories();
+
+  const [products, setProducts] = useState<IProduct[]>(cachedProducts);
+  const [categories, setCategories] = useState<ICategory[]>(cachedCategories);
   const [searchQuery, setSearchQuery] = useState(initialSearchParam);
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam);
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'name'>('default');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(cachedProducts.length === 0);
 
   useEffect(() => {
     async function fetchData() {
@@ -31,21 +35,18 @@ function ProductCatalogContent() {
           const prodData = await resProd.json();
           if (Array.isArray(prodData) && prodData.length > 0) {
             setProducts(prodData);
-          } else {
-            setProducts(INITIAL_PRODUCTS);
+            setClientProducts(prodData);
           }
-        } else {
-          setProducts(INITIAL_PRODUCTS);
         }
         if (resCat.ok) {
           const catData = await resCat.json();
           if (Array.isArray(catData) && catData.length > 0) {
             setCategories(catData);
+            setClientCategories(catData);
           }
         }
       } catch (err) {
         console.error('Error loading catalog data:', err);
-        setProducts(INITIAL_PRODUCTS);
       } finally {
         setLoading(false);
       }
@@ -101,7 +102,7 @@ function ProductCatalogContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       
-      {/* Header Banner & Sort Control (Single Clean Header without duplicate search bar) */}
+      {/* Header Banner & Sort Control */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -175,7 +176,7 @@ function ProductCatalogContent() {
       </div>
 
       {/* Loading State */}
-      {loading && (
+      {loading && products.length === 0 && (
         <div className="text-center py-16 space-y-3">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-slate-500 text-xs font-semibold">Loading catalog...</p>
@@ -202,8 +203,8 @@ function ProductCatalogContent() {
         </div>
       )}
 
-      {/* Products Grid - ENTIRE PRODUCT CARD IS CLICKABLE */}
-      {!loading && filteredProducts.length > 0 && (
+      {/* Products Grid */}
+      {filteredProducts.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {filteredProducts.map((product) => {
             const originalPrice = Math.round(product.price * 1.25);
@@ -218,7 +219,7 @@ function ProductCatalogContent() {
                 key={product.id || product._id}
                 className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
               >
-                {/* Clickable Card Link for Entire Product Area */}
+                {/* Clickable Card Area */}
                 <Link href={detailUrl} className="block cursor-pointer">
                   {/* Product Image */}
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">

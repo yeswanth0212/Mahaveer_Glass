@@ -4,14 +4,16 @@ import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { Phone, MessageSquare, ArrowLeft, CheckCircle2, ShieldCheck, Tag, Star } from 'lucide-react';
 import { IProduct } from '@/lib/types';
-import { INITIAL_PRODUCTS } from '@/lib/seedData';
+import { getClientProductById, setClientProducts } from '@/lib/clientProductStore';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const initialProd = INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
-  const [product, setProduct] = useState<IProduct | null>(initialProd);
-  const [selectedVariant, setSelectedVariant] = useState<string>(initialProd?.variants?.[0] || '');
-  const [loading, setLoading] = useState(!initialProd);
+  
+  // Instant 0ms synchronous retrieval from client cache
+  const cached = getClientProductById(id);
+  const [product, setProduct] = useState<IProduct | null>(cached);
+  const [selectedVariant, setSelectedVariant] = useState<string>(cached?.variants?.[0] || '');
+  const [loading, setLoading] = useState(!cached);
 
   useEffect(() => {
     async function loadProduct() {
@@ -25,7 +27,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           }
         }
       } catch {
-        // Keep initial product if fetch fails
+        // Keep cached product if fetch fails
       } finally {
         setLoading(false);
       }
@@ -33,7 +35,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     loadProduct();
   }, [id]);
 
-  if (loading) {
+  if (loading && !product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center space-y-3">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
