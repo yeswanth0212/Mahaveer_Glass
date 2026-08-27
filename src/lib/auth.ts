@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'mahaveer_hardware_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'mhvr_jwt_x9k2@p7qL!3nRv8sWdTcYeZuA4bF6gHj0';
 export const TOKEN_NAME = 'mahaveer_admin_token';
 
 export interface AdminTokenPayload {

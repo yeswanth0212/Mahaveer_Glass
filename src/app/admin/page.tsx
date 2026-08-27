@@ -19,19 +19,11 @@ export default function AdminLoginPage() {
     setErrorMsg('');
 
     try {
-      let idToken = '';
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        idToken = await userCredential.user.getIdToken();
-      } catch (fbErr: any) {
-        console.warn('Firebase Auth direct login warning:', fbErr.message);
-      }
-
       // Establish session cookie
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, idToken })
+        body: JSON.stringify({ email, password })
       });
 
       if (res.ok) {
