@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Filter, MessageSquare, Phone, CheckCircle2, ChevronRight, Layers, Star, X, Sparkles } from 'lucide-react';
 import { IProduct, ICategory } from '@/lib/types';
 import { getClientProducts, setClientProducts, getClientCategories, setClientCategories } from '@/lib/clientProductStore';
+import { computeProductPricing, getVariantPriceRange, formatWhatsAppEnquiryUrl } from '@/lib/pricingUtils';
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
@@ -207,11 +208,14 @@ function ProductCatalogContent() {
       {filteredProducts.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {filteredProducts.map((product) => {
-            const originalPrice = Math.round(product.price * 1.25);
-            const encodedMsg = encodeURIComponent(
-              `Hello Mahaveer Glass & Plywood Hardware, I am interested in ${product.name}. Please confirm price and availability.`
-            );
-            const whatsappLink = `https://wa.me/917871457430?text=${encodedMsg}`;
+            const range = getVariantPriceRange(product);
+            const firstVariantId = product.variantsData?.[0]?.id || product.variants?.[0] || undefined;
+            const whatsappLink = formatWhatsAppEnquiryUrl({
+              product,
+              selectedVariantName: product.variantsData?.[0]?.name || product.variants?.[0] || undefined,
+              quantity: 1,
+              businessWhatsApp: '917871457430'
+            });
             const detailUrl = `/products/${product.id || product._id}`;
 
             return (
@@ -260,19 +264,53 @@ function ProductCatalogContent() {
                     </p>
                   )}
 
-                  {/* Pricing */}
-                  <div className="mt-2 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400 line-through">
-                        ₹{originalPrice.toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-sm font-black text-slate-900">
-                        ₹{product.price.toLocaleString('en-IN')}
+                  {/* Variant Indicator */}
+                  {range.hasVariants && (
+                    <div className="mt-1 flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md">
+                        {range.variantCount} Variants
                       </span>
                     </div>
-                    <p className="text-xs font-bold text-blue-600">
-                      Buy at ₹{product.price.toLocaleString('en-IN')}
-                    </p>
+                  )}
+
+                  {/* Pricing */}
+                  <div className="mt-2 space-y-0.5">
+                    {range.isRange ? (
+                      <>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-black text-slate-900">
+                            From ₹{range.minPrice.toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-[10px] text-slate-400">- ₹{range.maxPrice.toLocaleString('en-IN')}</span>
+                        </div>
+                        {range.maxDiscountPercentage > 0 && (
+                          <p className="text-[11px] font-bold text-emerald-600">
+                            Save up to {range.maxDiscountPercentage}% OFF
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          {range.maxDiscountPercentage > 0 && (
+                            <span className="text-xs text-slate-400 line-through">
+                              ₹{Math.round(range.minPrice * 100 / (100 - range.maxDiscountPercentage)).toLocaleString('en-IN')}
+                            </span>
+                          )}
+                          <span className="text-sm font-black text-slate-900">
+                            ₹{range.minPrice.toLocaleString('en-IN')}
+                          </span>
+                          {range.maxDiscountPercentage > 0 && (
+                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded">
+                              {range.maxDiscountPercentage}% OFF
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-bold text-blue-600">
+                          ₹{range.minPrice.toLocaleString('en-IN')} at Store
+                        </p>
+                      </>
+                    )}
                   </div>
                 </Link>
 

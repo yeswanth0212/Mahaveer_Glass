@@ -1,15 +1,31 @@
+export interface IProductVariant {
+  id: string;
+  name: string; // e.g. "1 Litre", "2 Litre", "5 Litre", "8ft x 4ft", "Antique Brass"
+  sku?: string;
+  basePrice: number; // MRP / Original Base Price
+  sellingPrice: number; // Discounted / Selling Price
+  discountType?: 'percentage' | 'flat'; // 'percentage' or 'flat'
+  discountValue?: number; // e.g. 15 for 15% or 100 for ₹100 flat discount
+  inStock?: boolean; // Stock availability
+  order?: number; // Sorting order
+}
+
 export interface IProduct {
   id?: string;
   _id?: string;
   name: string;
   category: string;
-  price: number;
+  price: number; // Current / Starting selling price
+  basePrice?: number; // Original MRP / Base price before discount
+  discountType?: 'percentage' | 'flat';
+  discountValue?: number;
   priceDisplay?: string;
   typeVariant?: string;
   description?: string;
   shortDescription?: string;
   specifications?: string[];
-  variants?: string[];
+  variants?: string[]; // Array of variant names for backwards compatibility
+  variantsData?: IProductVariant[]; // Comprehensive variant pricing records
   image?: string;
   imageUrl?: string;
   images?: string[];

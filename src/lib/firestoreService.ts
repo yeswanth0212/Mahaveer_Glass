@@ -9,7 +9,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { IProduct, ICategory, IEnquiry, IGalleryItem, IBusinessInfo } from './types';
+import { IProduct, IProductVariant, ICategory, IEnquiry, IGalleryItem, IBusinessInfo } from './types';
 import { INITIAL_BUSINESS_INFO, INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_GALLERY } from './seedData';
 
 // Fast in-memory cache to make Vercel responses instant
@@ -28,18 +28,49 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 // Helper to normalize Firestore doc to product
 function docToProduct(docSnap: any): IProduct {
   const data = docSnap.data();
+  const variantsData: IProductVariant[] | undefined = Array.isArray(data.variantsData)
+    ? data.variantsData.map((v: any, index: number) => ({
+        id: v.id || `var-${index + 1}`,
+        name: v.name || '',
+        sku: v.sku || '',
+        basePrice: Number(v.basePrice) || Number(v.sellingPrice) || 0,
+        sellingPrice: Number(v.sellingPrice) || Number(v.basePrice) || 0,
+        discountType: v.discountType || 'percentage',
+        discountValue: Number(v.discountValue) || 0,
+        inStock: v.inStock !== false,
+        order: Number(v.order) || index,
+      }))
+    : undefined;
+
+  // Sync variants string array
+  const variants = variantsData && variantsData.length > 0
+    ? variantsData.map(v => v.name)
+    : (Array.isArray(data.variants) ? data.variants : []);
+
+  const price = variantsData && variantsData.length > 0
+    ? (variantsData.find(v => v.inStock !== false)?.sellingPrice || variantsData[0].sellingPrice || Number(data.price) || 0)
+    : (Number(data.price) || 0);
+
+  const basePrice = variantsData && variantsData.length > 0
+    ? (variantsData.find(v => v.inStock !== false)?.basePrice || variantsData[0].basePrice || Number(data.basePrice) || price)
+    : (Number(data.basePrice) || Math.round(price * 1.25));
+
   return {
     id: docSnap.id,
     _id: docSnap.id,
     name: data.name || '',
     category: data.category || '',
-    price: Number(data.price) || 0,
-    priceDisplay: data.priceDisplay || `₹${Number(data.price || 0).toLocaleString('en-IN')}`,
+    price,
+    basePrice,
+    discountType: data.discountType || 'percentage',
+    discountValue: Number(data.discountValue) || 0,
+    priceDisplay: data.priceDisplay || `₹${price.toLocaleString('en-IN')}`,
     typeVariant: data.typeVariant || '',
     description: data.description || data.shortDescription || '',
     shortDescription: data.shortDescription || data.description || '',
     specifications: Array.isArray(data.specifications) ? data.specifications : [],
-    variants: Array.isArray(data.variants) ? data.variants : [],
+    variants,
+    variantsData,
     image: data.image || data.imageUrl || '',
     imageUrl: data.imageUrl || data.image || '',
     images: Array.isArray(data.images) ? data.images : [data.image || data.imageUrl].filter(Boolean),
@@ -110,16 +141,48 @@ export async function addProductToFirestore(data: Partial<IProduct>): Promise<IP
   cachedProducts = null; // Invalidate cache
   const colRef = collection(db, 'products');
   const now = new Date().toISOString();
+
+  // Normalize variantsData
+  const variantsData = Array.isArray(data.variantsData) && data.variantsData.length > 0
+    ? data.variantsData.map((v, idx) => ({
+        id: v.id || `var-${Date.now()}-${idx}`,
+        name: v.name || '',
+        sku: v.sku || '',
+        basePrice: Number(v.basePrice) || Number(v.sellingPrice) || 0,
+        sellingPrice: Number(v.sellingPrice) || Number(v.basePrice) || 0,
+        discountType: v.discountType || 'percentage',
+        discountValue: Number(v.discountValue) || 0,
+        inStock: v.inStock !== false,
+        order: Number(v.order) || idx,
+      }))
+    : [];
+
+  const mainPrice = variantsData.length > 0
+    ? (variantsData.find(v => v.inStock !== false)?.sellingPrice || variantsData[0].sellingPrice || Number(data.price) || 0)
+    : (Number(data.price) || 0);
+
+  const mainBasePrice = variantsData.length > 0
+    ? (variantsData.find(v => v.inStock !== false)?.basePrice || variantsData[0].basePrice || Number(data.basePrice) || mainPrice)
+    : (Number(data.basePrice) || Math.round(mainPrice * 1.25));
+
+  const variantsList = variantsData.length > 0
+    ? variantsData.map(v => v.name)
+    : (data.variants || []);
+
   const docData = {
     name: data.name || '',
     category: data.category || '',
-    price: Number(data.price) || 0,
-    priceDisplay: data.priceDisplay || `₹${Number(data.price || 0).toLocaleString('en-IN')}`,
+    price: mainPrice,
+    basePrice: mainBasePrice,
+    discountType: data.discountType || 'percentage',
+    discountValue: Number(data.discountValue) || 0,
+    priceDisplay: data.priceDisplay || `₹${mainPrice.toLocaleString('en-IN')}`,
     typeVariant: data.typeVariant || '',
     description: data.shortDescription || data.description || '',
     shortDescription: data.shortDescription || data.description || '',
     specifications: data.specifications || [],
-    variants: data.variants || [],
+    variants: variantsList,
+    variantsData: variantsData.length > 0 ? variantsData : [],
     image: data.imageUrl || data.image || 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
     imageUrl: data.imageUrl || data.image || 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&auto=format&fit=crop&q=80',
     images: (data.images || [data.imageUrl || data.image]).filter((img): img is string => Boolean(img)),
@@ -146,6 +209,36 @@ export async function updateProductInFirestore(id: string, data: Partial<IProduc
     updateData.price = Number(data.price);
     updateData.priceDisplay = `₹${Number(data.price).toLocaleString('en-IN')}`;
   }
+  if (data.basePrice !== undefined) updateData.basePrice = Number(data.basePrice);
+  if (data.discountType !== undefined) updateData.discountType = data.discountType;
+  if (data.discountValue !== undefined) updateData.discountValue = Number(data.discountValue);
+
+  if (data.variantsData !== undefined) {
+    const formatted = Array.isArray(data.variantsData)
+      ? data.variantsData.map((v, idx) => ({
+          id: v.id || `var-${Date.now()}-${idx}`,
+          name: v.name || '',
+          sku: v.sku || '',
+          basePrice: Number(v.basePrice) || Number(v.sellingPrice) || 0,
+          sellingPrice: Number(v.sellingPrice) || Number(v.basePrice) || 0,
+          discountType: v.discountType || 'percentage',
+          discountValue: Number(v.discountValue) || 0,
+          inStock: v.inStock !== false,
+          order: Number(v.order) || idx,
+        }))
+      : [];
+    updateData.variantsData = formatted;
+    updateData.variants = formatted.map(v => v.name);
+    if (formatted.length > 0 && data.price === undefined) {
+      const activeVar = formatted.find(v => v.inStock !== false) || formatted[0];
+      updateData.price = activeVar.sellingPrice;
+      updateData.basePrice = activeVar.basePrice;
+      updateData.priceDisplay = `₹${activeVar.sellingPrice.toLocaleString('en-IN')}`;
+    }
+  } else if (data.variants !== undefined) {
+    updateData.variants = data.variants;
+  }
+
   if (data.typeVariant !== undefined) updateData.typeVariant = data.typeVariant;
   if (data.shortDescription !== undefined || data.description !== undefined) {
     const desc = data.shortDescription || data.description || '';
@@ -153,7 +246,6 @@ export async function updateProductInFirestore(id: string, data: Partial<IProduc
     updateData.shortDescription = desc;
   }
   if (data.specifications !== undefined) updateData.specifications = data.specifications;
-  if (data.variants !== undefined) updateData.variants = data.variants;
   if (data.imageUrl !== undefined || data.image !== undefined) {
     const img = data.imageUrl || data.image || '';
     updateData.image = img;
@@ -412,12 +504,16 @@ export async function seedFirestoreProducts() {
       name: item.name,
       category: item.category,
       price: item.price,
+      basePrice: item.basePrice || Math.round(item.price * 1.25),
+      discountType: item.discountType || 'percentage',
+      discountValue: item.discountValue || 0,
       priceDisplay: item.priceDisplay || `₹${item.price.toLocaleString('en-IN')}`,
       typeVariant: item.typeVariant || '',
       description: item.shortDescription || '',
       shortDescription: item.shortDescription || '',
       specifications: item.specifications || [],
       variants: item.variants || [],
+      variantsData: item.variantsData || [],
       image: item.imageUrl,
       imageUrl: item.imageUrl,
       images: [item.imageUrl],
