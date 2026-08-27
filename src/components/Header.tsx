@@ -6,16 +6,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Phone, MessageSquare, Menu, X, Search, ShoppingBag, ShieldCheck } from 'lucide-react';
 
-const TABS = [
-  { name: 'All Products', href: '/products' },
-  { name: 'Door Hardware', href: '/products?category=Door%20Hardware' },
-  { name: 'Locks & Mortise', href: '/products?category=Locks%20%26%20Mortise' },
-  { name: 'Tower Bolts', href: '/products?category=Tower%20Bolts' },
-  { name: 'Brass Aldrops', href: '/products?category=Brass%20Aldrops' },
-  { name: 'Marine Plywood', href: '/products?category=Plywood%20%26%20Laminates' },
-  { name: 'Glass Fittings', href: '/products?category=Glass%20Hardware' },
-  { name: 'Showroom Gallery', href: '/gallery' },
-];
+
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -140,20 +131,7 @@ export default function Header() {
         </form>
       </div>
 
-      {/* Horizontal Category Slider Bar (Flipkart App Style) */}
-      <div className="border-t border-slate-100 bg-white shadow-inner overflow-x-auto scrollbar-none">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 sm:gap-2 py-2 whitespace-nowrap">
-          {TABS.map((tab, i) => (
-            <Link
-              key={i}
-              href={tab.href}
-              className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50/80 transition-all border border-transparent hover:border-blue-200"
-            >
-              {tab.name}
-            </Link>
-          ))}
-        </div>
-      </div>
+
 
       {/* Mobile Drawer */}
       {isOpen && (
