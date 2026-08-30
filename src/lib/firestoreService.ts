@@ -268,28 +268,22 @@ export async function deleteProductFromFirestore(id: string): Promise<boolean> {
 // ---------------- CATEGORIES ----------------
 export async function getCategoriesFromFirestore(): Promise<ICategory[]> {
   const now = Date.now();
-  if (cachedCategories && (now - lastCategoriesFetch < 60000)) {
+  if (cachedCategories !== null && (now - lastCategoriesFetch < 60000)) {
     return cachedCategories;
   }
 
   try {
-    const fetchPromise = async () => {
-      const colRef = collection(db, 'categories');
-      const snap = await getDocs(colRef);
-      if (snap.empty) {
-        await seedFirestoreCategories();
-        const newSnap = await getDocs(colRef);
-        return newSnap.docs.map(d => ({ id: d.id, _id: d.id, ...d.data() } as ICategory));
-      }
-      return snap.docs.map(d => ({ id: d.id, _id: d.id, ...d.data() } as ICategory));
-    };
-
-    const result = await withTimeout(fetchPromise(), 1500, cachedCategories || INITIAL_CATEGORIES);
-    cachedCategories = result;
-    lastCategoriesFetch = now;
-    return result;
+    const colRef = collection(db, 'categories');
+    const snap = await withTimeout(getDocs(colRef), 8000, null);
+    if (snap) {
+      const items = snap.docs.map(d => ({ id: d.id, _id: d.id, ...d.data() } as ICategory));
+      cachedCategories = items;
+      lastCategoriesFetch = now;
+      return items;
+    }
+    return cachedCategories ?? [];
   } catch (error) {
-    return cachedCategories || INITIAL_CATEGORIES;
+    return cachedCategories ?? [];
   }
 }
 
@@ -309,6 +303,35 @@ export async function addCategoryToFirestore(data: Partial<ICategory>): Promise<
   };
   const docRef = await addDoc(colRef, docData);
   return { id: docRef.id, _id: docRef.id, ...docData };
+}
+
+export async function updateCategoryInFirestore(id: string, data: Partial<ICategory>): Promise<ICategory> {
+  cachedCategories = null;
+  const docRef = doc(db, 'categories', id);
+  const now = new Date().toISOString();
+  const updateData: any = { updatedAt: now };
+
+  if (data.name !== undefined) {
+    updateData.name = data.name;
+    updateData.slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.imageUrl !== undefined || data.image !== undefined) {
+    const img = data.imageUrl || data.image || '';
+    updateData.image = img;
+    updateData.imageUrl = img;
+  }
+
+  await updateDoc(docRef, updateData);
+  const snap = await getDoc(docRef);
+  return { id: snap.id, _id: snap.id, ...snap.data() } as ICategory;
+}
+
+export async function deleteCategoryFromFirestore(id: string): Promise<boolean> {
+  cachedCategories = null;
+  const docRef = doc(db, 'categories', id);
+  await deleteDoc(docRef);
+  return true;
 }
 
 // ---------------- ENQUIRIES ----------------
