@@ -8,6 +8,7 @@ const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes lockout after 5 failed attempts
 
 function isRateLimited(ip: string): boolean {
+  if (process.env.NODE_ENV !== 'production') return false;
   const now = Date.now();
   const record = loginAttempts.get(ip);
   if (!record) return false;

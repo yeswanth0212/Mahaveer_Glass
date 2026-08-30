@@ -1,29 +1,22 @@
 import React from 'react';
+import Link from 'next/link';
+import { IProduct } from '@/lib/types';
+import { getVariantPriceRange } from '@/lib/pricingUtils';
 
-const PRICE_LIST_ITEMS = [
-  { name: '5" S.S Keel', price: '₹110', category: 'Door Hardware' },
-  { name: '5" Brass Keel', price: '₹360', category: 'Door Hardware' },
-  { name: '6" S.S Tower Bolt', price: '₹85', category: 'Tower Bolts' },
-  { name: '8" S.S Tower Bolt', price: '₹98', category: 'Tower Bolts' },
-  { name: '6" T.B Brass Tower Bolt', price: '₹240', category: 'Tower Bolts' },
-  { name: '8" T.B Brass Tower Bolt', price: '₹280', category: 'Tower Bolts' },
-  { name: 'S.S Door Stopper', price: '₹75', category: 'Door Stoppers' },
-  { name: 'Ant Door Stopper', price: '₹290', category: 'Door Stoppers' },
-  { name: 'Rim Lock', price: '₹3,100', category: 'Locks' },
-  { name: 'Smart Rim Lock', price: '₹1,500', category: 'Locks' },
-  { name: '10" S.S Aldrop', price: '₹260', category: 'Aldrops' },
-  { name: '10" Brass Aldrop', price: '₹980', category: 'Aldrops' },
-  { name: 'Door Magnet', price: '₹95', category: 'Door Magnets' },
-];
+interface PriceListTableProps {
+  products?: IProduct[];
+}
 
-const ESTIMATE_ITEMS = [
-  { name: '7" Mortise Lock', type: 'KY - Antique / S.S', price: '₹650' },
-  { name: '8" Mortise Lock', type: 'KY - Antique / S.S', price: '₹750' },
-  { name: '8" Mortise Lock', type: 'CY - Antique / S.S / Brass', price: '₹1,800' },
-  { name: '10" Mortise Lock', type: 'CY - Antique / S.S / Brass', price: '₹2,800' },
-];
+export default function PriceListTable({ products = [] }: PriceListTableProps) {
+  if (!products || products.length === 0) {
+    return null;
+  }
 
-export default function PriceListTable() {
+  // Products with variant finish/models
+  const variantProducts = products.filter(p => 
+    (p.variantsData && p.variantsData.length > 0) || (p.variants && p.variants.length > 0)
+  );
+
   return (
     <div className="space-y-8">
       {/* Standard Door Hardware Price List */}
@@ -52,56 +45,89 @@ export default function PriceListTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
-              {PRICE_LIST_ITEMS.map((item, index) => (
-                <tr key={index} className="hover:bg-blue-50/40 transition-colors">
-                  <td className="px-6 py-3.5 font-bold text-slate-900">{item.name}</td>
-                  <td className="px-6 py-3.5 text-slate-500">{item.category}</td>
-                  <td className="px-6 py-3.5 font-black text-blue-600 text-right">{item.price}</td>
-                </tr>
-              ))}
+              {products.map((item) => {
+                const range = getVariantPriceRange(item);
+                const priceStr = range.isRange 
+                  ? `₹${range.minPrice.toLocaleString('en-IN')} – ₹${range.maxPrice.toLocaleString('en-IN')}`
+                  : `₹${range.minPrice.toLocaleString('en-IN')}`;
+
+                return (
+                  <tr key={item.id || item._id} className="hover:bg-blue-50/40 transition-colors">
+                    <td className="px-6 py-3.5 font-bold text-slate-900">
+                      <Link href={`/products/${item.id || item._id}`} className="hover:text-blue-600">
+                        {item.name}
+                      </Link>
+                      {item.typeVariant && (
+                        <span className="block text-[11px] text-slate-400 font-normal">
+                          {item.typeVariant}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-3.5 text-slate-500">{item.category}</td>
+                    <td className="px-6 py-3.5 font-black text-blue-600 text-right">{priceStr}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Mortise Locks & Estimate Items Table */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
-          <div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Mortise Locks & Finish Variants
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Available in Antique, Stainless Steel (S.S), and Polished Brass finishes.
-            </p>
+      {/* Mortise Locks & Variants Table if any exist */}
+      {variantProducts.length > 0 && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Product Options & Finish Variants
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Available models, dimensions and finish specifications.
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm text-slate-700">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
+                <tr>
+                  <th scope="col" className="px-6 py-3.5 rounded-tl-xl">Product Model</th>
+                  <th scope="col" className="px-6 py-3.5">Type / Available Variants</th>
+                  <th scope="col" className="px-6 py-3.5 text-right rounded-tr-xl">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {variantProducts.map((item) => {
+                  const variantsText = item.variantsData && item.variantsData.length > 0
+                    ? item.variantsData.map(v => `${v.name} (₹${v.sellingPrice})`).join(' · ')
+                    : item.variants?.join(' · ') || item.typeVariant || 'Standard';
+
+                  const range = getVariantPriceRange(item);
+                  const priceStr = range.isRange 
+                    ? `From ₹${range.minPrice.toLocaleString('en-IN')}`
+                    : `₹${range.minPrice.toLocaleString('en-IN')}`;
+
+                  return (
+                    <tr key={item.id || item._id} className="hover:bg-blue-50/40 transition-colors">
+                      <td className="px-6 py-3.5 font-bold text-slate-900">
+                        <Link href={`/products/${item.id || item._id}`} className="hover:text-blue-600">
+                          {item.name}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <span className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
+                          {variantsText}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 font-black text-blue-600 text-right">{priceStr}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm text-slate-700">
-            <thead className="bg-slate-50 text-slate-600 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
-              <tr>
-                <th scope="col" className="px-6 py-3.5 rounded-tl-xl">Mortise Lock Model</th>
-                <th scope="col" className="px-6 py-3.5">Type / Available Variants</th>
-                <th scope="col" className="px-6 py-3.5 text-right rounded-tr-xl">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {ESTIMATE_ITEMS.map((item, index) => (
-                <tr key={index} className="hover:bg-blue-50/40 transition-colors">
-                  <td className="px-6 py-3.5 font-bold text-slate-900">{item.name}</td>
-                  <td className="px-6 py-3.5">
-                    <span className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
-                      {item.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3.5 font-black text-blue-600 text-right">{item.price}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

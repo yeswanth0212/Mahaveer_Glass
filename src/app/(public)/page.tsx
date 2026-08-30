@@ -30,23 +30,33 @@ import { getVariantPriceRange, formatWhatsAppEnquiryUrl } from '@/lib/pricingUti
 
 export default function HomePage() {
   const [products, setProducts] = useState<IProduct[]>(getClientProducts());
+  const [categories, setCategories] = useState<any[]>(INITIAL_CATEGORIES);
 
   useEffect(() => {
-    async function loadProducts() {
+    async function loadData() {
       try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
+        const [resP, resC] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/categories')
+        ]);
+        if (resP.ok) {
+          const data = await resP.json();
+          if (Array.isArray(data)) {
             setProducts(data);
             setClientProducts(data);
           }
         }
+        if (resC.ok) {
+          const catData = await resC.json();
+          if (Array.isArray(catData) && catData.length > 0) {
+            setCategories(catData);
+          }
+        }
       } catch (err) {
-        console.error('Failed to load products:', err);
+        console.error('Failed to load home data:', err);
       }
     }
-    loadProducts();
+    loadData();
   }, []);
 
   const quickLookItems = [
@@ -192,195 +202,201 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. "SUGGESTED FOR YOU" PRODUCT CARDS (EXACT FLIPKART STYLE) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Suggested For You
-            </h2>
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
-              Best Sellers
-            </span>
-          </div>
-
-          <Link
-            href="/products"
-            className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md shadow-slate-900/10"
-            title="Browse all products"
-          >
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        {/* Product Cards Grid with Rating Pills & Price Format */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          {products.slice(0, 10).map((product) => {
-            const range = getVariantPriceRange(product);
-            const whatsappLink = formatWhatsAppEnquiryUrl({
-              product,
-              selectedVariantName: product.variantsData?.[0]?.name || product.variants?.[0] || undefined,
-              quantity: 1,
-              businessWhatsApp: '917871457430'
-            });
-
-            return (
-              <div
-                key={product.id || product._id}
-                className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
-              >
-                {/* Clickable Card Area */}
-                <Link href={`/products/${product.id || product._id}`} className="block cursor-pointer">
-                  {/* Product Image Box with Rating Badge */}
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">
-                    <img
-                      src={product.imageUrl || product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-
-                    {/* Rating Pill (bottom left like Flipkart screenshot) */}
-                    <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black flex items-center gap-0.5 shadow-md">
-                      <span>4.6</span>
-                      <Star className="w-2.5 h-2.5 fill-white text-emerald-700" />
-                    </div>
-
-                    {/* Stock pill */}
-                    {product.availability && (
-                      <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold uppercase">
-                        {product.availability}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Product Title */}
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">
-                    {product.name}
-                  </h3>
-
-                  {/* Variant Tag */}
-                  {product.typeVariant && (
-                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
-                      {product.typeVariant}
-                    </p>
-                  )}
-
-                  {/* Variant Count Badge */}
-                  {range.hasVariants && (
-                    <div className="mt-1">
-                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md">
-                        {range.variantCount} Variants
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Pricing */}
-                  <div className="mt-2 space-y-0.5">
-                    {range.isRange ? (
-                      <>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-black text-slate-900">
-                            From ₹{range.minPrice.toLocaleString('en-IN')}
-                          </span>
-                          <span className="text-[10px] text-slate-400">– ₹{range.maxPrice.toLocaleString('en-IN')}</span>
-                        </div>
-                        {range.maxDiscountPercentage > 0 && (
-                          <p className="text-[11px] font-bold text-emerald-600">
-                            Save up to {range.maxDiscountPercentage}% OFF
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2">
-                          {range.maxDiscountPercentage > 0 && (
-                            <span className="text-xs text-slate-400 line-through">
-                              ₹{Math.round(range.minPrice * 100 / (100 - range.maxDiscountPercentage)).toLocaleString('en-IN')}
-                            </span>
-                          )}
-                          <span className="text-sm font-black text-slate-900">
-                            ₹{range.minPrice.toLocaleString('en-IN')}
-                          </span>
-                          {range.maxDiscountPercentage > 0 && (
-                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded">
-                              {range.maxDiscountPercentage}% OFF
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] font-bold text-blue-600">
-                          ₹{range.minPrice.toLocaleString('en-IN')} at Store
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </Link>
-
-                {/* Card Action Button */}
-                <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1.5">
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1 shadow-sm"
-                  >
-                    <MessageSquare className="w-3 h-3" />
-                    Enquire
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 4. EXPLORE CATEGORIES GRID */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+      {/* 3. "SUGGESTED FOR YOU" PRODUCT CARDS */}
+      {products.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
-            <div>
+            <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Shop By Product Category
+                Suggested For You
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">Direct store supply in Old Pallavaram, Chennai</p>
+              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                Best Sellers
+              </span>
             </div>
-            <Link href="/products" className="text-xs font-bold text-blue-600 hover:text-blue-700">
-              View Catalog →
+
+            <Link
+              href="/products"
+              className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md shadow-slate-900/10"
+              title="Browse all products"
+            >
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {INITIAL_CATEGORIES.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${encodeURIComponent(cat.name)}`}
-                className="group p-5 rounded-2xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 transition-all flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                    {cat.name.includes('Lock') ? <Lock className="w-5 h-5" /> :
-                     cat.name.includes('Plywood') || cat.name.includes('Laminates') ? <Layers className="w-5 h-5" /> :
-                     <DoorOpen className="w-5 h-5" />}
+          {/* Product Cards Grid with Rating Pills & Price Format */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+            {products.slice(0, 10).map((product) => {
+              const range = getVariantPriceRange(product);
+              const whatsappLink = formatWhatsAppEnquiryUrl({
+                product,
+                selectedVariantName: product.variantsData?.[0]?.name || product.variants?.[0] || undefined,
+                quantity: 1,
+                businessWhatsApp: '917871457430'
+              });
+
+              return (
+                <div
+                  key={product.id || product._id}
+                  className="group bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-xl transition-all duration-300 p-3 flex flex-col justify-between"
+                >
+                  {/* Clickable Card Area */}
+                  <Link href={`/products/${product.id || product._id}`} className="block cursor-pointer">
+                    {/* Product Image Box with Rating Badge */}
+                    <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 border border-slate-100 mb-3">
+                      <img
+                        src={product.imageUrl || product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+
+                      {/* Rating Pill */}
+                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black flex items-center gap-0.5 shadow-md">
+                        <span>4.6</span>
+                        <Star className="w-2.5 h-2.5 fill-white text-emerald-700" />
+                      </div>
+
+                      {/* Stock pill */}
+                      {product.availability && (
+                        <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold uppercase">
+                          {product.availability}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Product Title */}
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
+
+                    {/* Variant Tag */}
+                    {product.typeVariant && (
+                      <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                        {product.typeVariant}
+                      </p>
+                    )}
+
+                    {/* Variant Count Badge */}
+                    {range.hasVariants && (
+                      <div className="mt-1">
+                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-md">
+                          {range.variantCount} Variants
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Pricing */}
+                    <div className="mt-2 space-y-0.5">
+                      {range.isRange ? (
+                        <>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-black text-slate-900">
+                              From ₹{range.minPrice.toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[10px] text-slate-400">– ₹{range.maxPrice.toLocaleString('en-IN')}</span>
+                          </div>
+                          {range.maxDiscountPercentage > 0 && (
+                            <p className="text-[11px] font-bold text-emerald-600">
+                              Save up to {range.maxDiscountPercentage}% OFF
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            {range.maxDiscountPercentage > 0 && (
+                              <span className="text-xs text-slate-400 line-through">
+                                ₹{Math.round(range.minPrice * 100 / (100 - range.maxDiscountPercentage)).toLocaleString('en-IN')}
+                              </span>
+                            )}
+                            <span className="text-sm font-black text-slate-900">
+                              ₹{range.minPrice.toLocaleString('en-IN')}
+                            </span>
+                            {range.maxDiscountPercentage > 0 && (
+                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded">
+                                {range.maxDiscountPercentage}% OFF
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] font-bold text-blue-600">
+                            ₹{range.minPrice.toLocaleString('en-IN')} at Store
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Card Action Button */}
+                  <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1.5">
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1 shadow-sm"
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      Enquire
+                    </a>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    {cat.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                    {cat.description}
-                  </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
-                  Browse Products <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* 4. EXPLORE CATEGORIES GRID */}
+      {categories.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Shop By Product Category
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">Direct store supply in Old Pallavaram, Chennai</p>
+              </div>
+              <Link href="/products" className="text-xs font-bold text-blue-600 hover:text-blue-700">
+                View Catalog →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id || cat.name}
+                  href={`/products?category=${encodeURIComponent(cat.name)}`}
+                  className="group p-5 rounded-2xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 transition-all flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                      {cat.name.includes('Lock') ? <Lock className="w-5 h-5" /> :
+                       cat.name.includes('Plywood') || cat.name.includes('Laminates') ? <Layers className="w-5 h-5" /> :
+                       <DoorOpen className="w-5 h-5" />}
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                      {cat.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                      {cat.description}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+                    Browse Products <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 5. CURRENT PRICE LIST TABLE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PriceListTable />
-      </section>
+      {products.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <PriceListTable products={products} />
+        </section>
+      )}
 
       {/* 6. WHY CHOOSE MAHAVEER & LOCATION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { IProduct, ICategory, IProductVariant } from '@/lib/types';
 import { computeProductPricing, getVariantPriceRange } from '@/lib/pricingUtils';
+import { setClientProducts, setClientCategories } from '@/lib/clientProductStore';
 
 interface FormVariantState {
   id: string;
@@ -61,8 +62,20 @@ export default function AdminProductsPage() {
         fetch('/api/products'),
         fetch('/api/categories')
       ]);
-      if (resP.ok) setProducts(await resP.json());
-      if (resC.ok) setCategories(await resC.json());
+      if (resP.ok) {
+        const prodData = await resP.json();
+        if (Array.isArray(prodData)) {
+          setProducts(prodData);
+          setClientProducts(prodData);
+        }
+      }
+      if (resC.ok) {
+        const catData = await resC.json();
+        if (Array.isArray(catData)) {
+          setCategories(catData);
+          setClientCategories(catData);
+        }
+      }
     } catch (err) {
       console.error(err);
     } finally {

@@ -2,30 +2,30 @@ import { IProduct, ICategory } from './types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from './seedData';
 
 // In-memory instant client cache
-let memoryProducts: IProduct[] = [];
-let memoryCategories: ICategory[] = [];
+let memoryProducts: IProduct[] | null = null;
+let memoryCategories: ICategory[] | null = null;
 
 export function getClientProducts(): IProduct[] {
-  if (memoryProducts.length > 0) {
+  if (memoryProducts !== null) {
     return memoryProducts;
   }
   if (typeof window !== 'undefined') {
     try {
       const stored = sessionStorage.getItem('mahaveer_products');
-      if (stored) {
+      if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           memoryProducts = parsed;
           return parsed;
         }
       }
     } catch {}
   }
-  return INITIAL_PRODUCTS;
+  return [];
 }
 
 export function setClientProducts(products: IProduct[]) {
-  if (Array.isArray(products) && products.length > 0) {
+  if (Array.isArray(products)) {
     memoryProducts = products;
     if (typeof window !== 'undefined') {
       try {
@@ -39,19 +39,19 @@ export function getClientProductById(id: string): IProduct | null {
   const all = getClientProducts();
   const found = all.find(p => p.id === id || p._id === id);
   if (found) return found;
-  return INITIAL_PRODUCTS.find(p => p.id === id || p._id === id) || null;
+  return null;
 }
 
 export function getClientCategories(): ICategory[] {
-  if (memoryCategories.length > 0) {
+  if (memoryCategories !== null) {
     return memoryCategories;
   }
   if (typeof window !== 'undefined') {
     try {
       const stored = sessionStorage.getItem('mahaveer_categories');
-      if (stored) {
+      if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           memoryCategories = parsed;
           return parsed;
         }
@@ -62,7 +62,7 @@ export function getClientCategories(): ICategory[] {
 }
 
 export function setClientCategories(categories: ICategory[]) {
-  if (Array.isArray(categories) && categories.length > 0) {
+  if (Array.isArray(categories)) {
     memoryCategories = categories;
     if (typeof window !== 'undefined') {
       try {

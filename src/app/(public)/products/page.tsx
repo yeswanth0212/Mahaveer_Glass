@@ -34,14 +34,14 @@ function ProductCatalogContent() {
         ]);
         if (resProd.ok) {
           const prodData = await resProd.json();
-          if (Array.isArray(prodData) && prodData.length > 0) {
+          if (Array.isArray(prodData)) {
             setProducts(prodData);
             setClientProducts(prodData);
           }
         }
         if (resCat.ok) {
           const catData = await resCat.json();
-          if (Array.isArray(catData) && catData.length > 0) {
+          if (Array.isArray(catData)) {
             setCategories(catData);
             setClientCategories(catData);
           }

@@ -86,7 +86,7 @@ function docToProduct(docSnap: any): IProduct {
 // ---------------- PRODUCTS ----------------
 export async function getProductsFromFirestore(): Promise<IProduct[]> {
   const now = Date.now();
-  if (cachedProducts && cachedProducts.length > 0 && (now - lastProductsFetch < 5000)) {
+  if (cachedProducts !== null && (now - lastProductsFetch < 5000)) {
     return cachedProducts;
   }
 
@@ -94,26 +94,17 @@ export async function getProductsFromFirestore(): Promise<IProduct[]> {
     const colRef = collection(db, 'products');
     const snap = await withTimeout(getDocs(colRef), 8000, null);
     
-    if (snap && !snap.empty) {
+    if (snap) {
       const items = snap.docs.map(docToProduct);
       cachedProducts = items;
       lastProductsFetch = now;
       return items;
     }
 
-    if (snap && snap.empty) {
-      await seedFirestoreProducts();
-      const newSnap = await getDocs(colRef);
-      const items = newSnap.docs.map(docToProduct);
-      cachedProducts = items;
-      lastProductsFetch = now;
-      return items;
-    }
-
-    return cachedProducts || INITIAL_PRODUCTS;
+    return cachedProducts ?? [];
   } catch (error) {
     console.warn('Firestore getProducts warning:', error);
-    return cachedProducts || INITIAL_PRODUCTS;
+    return cachedProducts ?? [];
   }
 }
 
