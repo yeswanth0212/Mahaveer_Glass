@@ -329,8 +329,29 @@ export async function updateCategoryInFirestore(id: string, data: Partial<ICateg
 
 export async function deleteCategoryFromFirestore(id: string): Promise<boolean> {
   cachedCategories = null;
-  const docRef = doc(db, 'categories', id);
-  await deleteDoc(docRef);
+  const colRef = collection(db, 'categories');
+
+  // Attempt direct doc delete
+  try {
+    const docRef = doc(db, 'categories', id);
+    await deleteDoc(docRef);
+  } catch {}
+
+  // Also query to make sure any matching doc by ID, name, or slug is deleted
+  try {
+    const snap = await getDocs(colRef);
+    for (const d of snap.docs) {
+      const data = d.data();
+      if (
+        d.id === id || 
+        data.name?.toLowerCase() === id.toLowerCase() || 
+        data.slug?.toLowerCase() === id.toLowerCase()
+      ) {
+        await deleteDoc(d.ref);
+      }
+    }
+  } catch {}
+
   return true;
 }
 

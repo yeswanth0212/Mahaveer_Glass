@@ -269,28 +269,34 @@ export default function AdminCategoriesPage() {
                           </p>
                         </div>
 
-                        <div className="pt-2 border-t border-stone-900 flex justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleStartEdit(c)}
-                            className="p-1.5 bg-stone-900 hover:bg-amber-500 hover:text-stone-950 text-amber-400 rounded-lg transition-colors cursor-pointer"
-                            title="Edit Category"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(catId, c.name)}
-                            disabled={isDeleting}
-                            className="p-1.5 bg-rose-950/60 hover:bg-rose-600 hover:text-white text-rose-400 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-                            title="Delete Category"
-                          >
-                            {isDeleting ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3.5 h-3.5" />
-                            )}
-                          </button>
+                        <div className="pt-3 border-t border-stone-900 flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-mono text-stone-500 truncate max-w-[120px]">
+                            {catId}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(c)}
+                              className="px-2.5 py-1 bg-stone-900 hover:bg-amber-500 hover:text-stone-950 text-amber-400 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                              title="Edit Category"
+                            >
+                              <Edit2 className="w-3 h-3" /> Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(catId || c.name, c.name)}
+                              disabled={isDeleting}
+                              className="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-600 hover:text-white text-rose-400 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              title="Delete Category"
+                            >
+                              {isDeleting ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3 h-3" />
+                              )}
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </>
                     )}
