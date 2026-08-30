@@ -59,13 +59,6 @@ export default function HomePage() {
     loadData();
   }, []);
 
-  const quickLookItems = [
-    { title: 'Brass Locks', sub: 'Mortise & Rim', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=400&auto=format&fit=crop&q=80', href: '/products?category=Locks%20%26%20Mortise' },
-    { title: 'Tower Bolts', sub: 'S.S & Brass', image: 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=400&auto=format&fit=crop&q=80', href: '/products?category=Tower%20Bolts' },
-    { title: 'Brass Aldrops', sub: 'Antique & Gold', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&auto=format&fit=crop&q=80', href: '/products?category=Brass%20Aldrops' },
-    { title: 'Marine Plywood', sub: 'IS:710 Grade', image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&auto=format&fit=crop&q=80', href: '/products?category=Plywood%20%26%20Laminates' },
-  ];
-
   return (
     <div className="bg-slate-50 min-h-screen pb-16 space-y-8 sm:space-y-12">
 
@@ -149,55 +142,6 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. "STILL LOOKING FOR THESE?" (FLIPKART STYLE CONTAINER) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-100/90 border border-blue-100 rounded-3xl p-5 sm:p-7 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
-                Still looking for these?
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">Popular categories frequently checked by Chennai customers</p>
-            </div>
-            <Link 
-              href="/products" 
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
-            >
-              View All <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {quickLookItems.map((item, i) => (
-              <Link
-                key={i}
-                href={item.href}
-                className="group bg-white rounded-2xl p-3 border border-slate-200/80 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between"
-              >
-                <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-100 mb-2.5">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors truncate">
-                    {item.title}
-                  </p>
-                  <p className="text-[11px] font-semibold text-slate-400">
-                    {item.sub}
-                  </p>
-                  <span className="text-[11px] font-bold text-blue-600 mt-1 inline-block">
-                    View Store →
-                  </span>
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
       </section>
